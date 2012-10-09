@@ -1,0 +1,160 @@
+2012-10-09 23:10:11,017 - INFO  [main:QuorumPeerConfig@90] - Reading configuration from: /home/sagar/Downloads/zookeeper-3.3.5/bin/../conf/zoo3.cfg
+2012-10-09 23:10:11,023 - INFO  [main:QuorumPeerConfig@310] - Defaulting to majority quorums
+2012-10-09 23:10:11,041 - INFO  [main:QuorumPeerMain@119] - Starting quorum peer
+2012-10-09 23:10:11,064 - INFO  [main:NIOServerCnxn$Factory@143] - binding to port 0.0.0.0/0.0.0.0:2193
+2012-10-09 23:10:11,082 - INFO  [main:QuorumPeer@819] - tickTime set to 2000
+2012-10-09 23:10:11,083 - INFO  [main:QuorumPeer@830] - minSessionTimeout set to -1
+2012-10-09 23:10:11,083 - INFO  [main:QuorumPeer@841] - maxSessionTimeout set to -1
+2012-10-09 23:10:11,083 - INFO  [main:QuorumPeer@856] - initLimit set to 5
+2012-10-09 23:10:11,167 - INFO  [main:FileSnap@82] - Reading snapshot /home/sagar/Downloads/zookeeper-3.3.5/data/server3/version-2/snapshot.900000011
+2012-10-09 23:10:11,206 - INFO  [Thread-1:QuorumCnxManager$Listener@473] - My election bind port: 3990
+2012-10-09 23:10:11,219 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:QuorumPeer@621] - LOOKING
+2012-10-09 23:10:11,221 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:FastLeaderElection@663] - New election. My id =  3, Proposed zxid = 38654705681
+2012-10-09 23:10:11,237 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 1 (n.leader), 38654705681 (n.zxid), 1 (n.round), LOOKING (n.state), 1 (n.sid), LOOKING (my state)
+2012-10-09 23:10:11,237 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 3 (n.leader), 38654705681 (n.zxid), 1 (n.round), LOOKING (n.state), 3 (n.sid), LOOKING (my state)
+2012-10-09 23:10:11,237 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 2 (n.leader), 38654705681 (n.zxid), 1 (n.round), LOOKING (n.state), 1 (n.sid), LOOKING (my state)
+2012-10-09 23:10:11,238 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 2 (n.leader), 38654705681 (n.zxid), 1 (n.round), LOOKING (n.state), 2 (n.sid), LOOKING (my state)
+2012-10-09 23:10:11,238 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 2 (n.leader), 38654705681 (n.zxid), 1 (n.round), LEADING (n.state), 2 (n.sid), LOOKING (my state)
+2012-10-09 23:10:11,238 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:QuorumPeer@655] - LEADING
+2012-10-09 23:10:11,241 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 2 (n.leader), 38654705681 (n.zxid), 1 (n.round), FOLLOWING (n.state), 1 (n.sid), LEADING (my state)
+2012-10-09 23:10:11,242 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Leader@55] - TCP NoDelay set to: true
+2012-10-09 23:10:11,249 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Environment@97] - Server environment:zookeeper.version=3.3.5--1, built on 10/09/2012 16:06 GMT
+2012-10-09 23:10:11,250 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Environment@97] - Server environment:host.name=sagar-Studio-1555
+2012-10-09 23:10:11,250 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Environment@97] - Server environment:java.version=1.6.0_24
+2012-10-09 23:10:11,250 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Environment@97] - Server environment:java.vendor=Sun Microsystems Inc.
+2012-10-09 23:10:11,250 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Environment@97] - Server environment:java.home=/usr/lib/jvm/java-6-openjdk-i386/jre
+2012-10-09 23:10:11,251 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Environment@97] - Server environment:java.class.path=/home/sagar/Downloads/zookeeper-3.3.5/bin/../build/recipes/gla/classes:/home/sagar/Downloads/zookeeper-3.3.5/bin/../build/classes:/home/sagar/Downloads/zookeeper-3.3.5/bin/../build/recipes/queue/classes:/home/sagar/Downloads/zookeeper-3.3.5/bin/../build/recipes/lock/classes:/home/sagar/Downloads/zookeeper-3.3.5/bin/../build/lib/log4j-1.2.15.jar:/home/sagar/Downloads/zookeeper-3.3.5/bin/../build/lib/jline-0.9.94.jar:/home/sagar/Downloads/zookeeper-3.3.5/bin/../zookeeper-*.jar:/home/sagar/Downloads/zookeeper-3.3.5/bin/../lib/log4j-1.2.15.jar:/home/sagar/Downloads/zookeeper-3.3.5/bin/../lib/jline-0.9.94.jar:/home/sagar/Downloads/zookeeper-3.3.5/bin/../src/java/lib/ivy-2.1.0.jar:/home/sagar/Downloads/zookeeper-3.3.5/bin/../src/java/lib/ant-eclipse-1.0-jvm1.2.jar:/home/sagar/Downloads/zookeeper-3.3.5/bin/../conf:
+2012-10-09 23:10:11,251 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Environment@97] - Server environment:java.library.path=/usr/lib/jvm/java-6-openjdk-i386/jre/lib/i386/server:/usr/lib/jvm/java-6-openjdk-i386/jre/lib/i386:/usr/lib/jvm/java-6-openjdk-i386/jre/../lib/i386:/usr/java/packages/lib/i386:/usr/lib/i386-linux-gnu/jni:/lib/i386-linux-gnu:/usr/lib/i386-linux-gnu:/usr/lib/jni:/lib:/usr/lib
+2012-10-09 23:10:11,252 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Environment@97] - Server environment:java.io.tmpdir=/tmp
+2012-10-09 23:10:11,252 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Environment@97] - Server environment:java.compiler=<NA>
+2012-10-09 23:10:11,253 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Environment@97] - Server environment:os.name=Linux
+2012-10-09 23:10:11,253 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Environment@97] - Server environment:os.arch=i386
+2012-10-09 23:10:11,254 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Environment@97] - Server environment:os.version=3.2.0-31-generic-pae
+2012-10-09 23:10:11,255 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Environment@97] - Server environment:user.name=root
+2012-10-09 23:10:11,255 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Environment@97] - Server environment:user.home=/root
+2012-10-09 23:10:11,255 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Environment@97] - Server environment:user.dir=/home/sagar/Downloads/zookeeper-3.3.5/bin
+2012-10-09 23:10:11,257 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:ZooKeeperServer@154] - Created server with tickTime 2000 minSessionTimeout 4000 maxSessionTimeout 40000 datadir /home/sagar/Downloads/zookeeper-3.3.5/data/server3/version-2 snapdir /home/sagar/Downloads/zookeeper-3.3.5/data/server3/version-2
+2012-10-09 23:10:11,265 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:FileSnap@82] - Reading snapshot /home/sagar/Downloads/zookeeper-3.3.5/data/server3/version-2/snapshot.900000011
+2012-10-09 23:10:11,269 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:FileTxnSnapLog@254] - Snapshotting: 900000011
+2012-10-09 23:10:23,277 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Leader@411] - Shutdown called
+java.lang.Exception: shutdown Leader! reason: Waiting for a quorum of followers, only synced with: 3: 
+	at org.apache.zookeeper.server.quorum.Leader.shutdown(Leader.java:411)
+	at org.apache.zookeeper.server.quorum.Leader.lead(Leader.java:317)
+	at org.apache.zookeeper.server.quorum.QuorumPeer.run(QuorumPeer.java:658)
+2012-10-09 23:10:23,278 - INFO  [Thread-6:Leader$LearnerCnxAcceptor@246] - exception while shutting down acceptor: java.net.SocketException: Socket closed
+2012-10-09 23:10:23,280 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:QuorumPeer@621] - LOOKING
+2012-10-09 23:10:23,287 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:FileSnap@82] - Reading snapshot /home/sagar/Downloads/zookeeper-3.3.5/data/server3/version-2/snapshot.900000011
+2012-10-09 23:10:23,295 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:FastLeaderElection@663] - New election. My id =  3, Proposed zxid = 38654705681
+2012-10-09 23:10:23,296 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 3 (n.leader), 38654705681 (n.zxid), 2 (n.round), LOOKING (n.state), 3 (n.sid), LOOKING (my state)
+2012-10-09 23:10:23,297 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 2 (n.leader), 38654705681 (n.zxid), 1 (n.round), FOLLOWING (n.state), 1 (n.sid), LOOKING (my state)
+2012-10-09 23:10:23,298 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 2 (n.leader), 38654705681 (n.zxid), 1 (n.round), LEADING (n.state), 2 (n.sid), LOOKING (my state)
+2012-10-09 23:10:23,298 - INFO  [QuorumP2012-10-09 23:10:23,311 - INFO  [LearnerHandler-/127.0.0.1:60372:LearnerHandler@249] - Follower sid: 3 : info : org.apache.zookeeper.server.quorum.QuorumPeer$QuorumServer@77ef83
+2012-10-09 23:10:23,311 - INFO  [LearnerHandler-/127.0.0.1:60372:LearnerHandler@273] - Synchronizing with Follower sid: 3 maxCommittedLog =0 minCommittedLog = 0 peerLastZxid = 900000011
+2012-10-09 23:10:23,311 - INFO  [LearnerHandler-/127.0.0.1:60372:LearnerHandler@357] - Sending snapshot2012-10-09 23:10:23,311 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Learner@294] - Getting a snap2012-10-09 23:10:33,584 - INFO  [SyncThread:2:FileTxnLog@199] - Creating new log file: log.a00000001
+2012-10-09 23:11:35,926 - INFO  [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2192:NIOServerCnxn$Factory@251] - Accepted socket connection from /127.0.0.1:57683
+2012-10-09 23:11:35,934 - INFO  [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2192:NIOServerCnxn@777] - Client attempting to establish new session at /127.0.0.1:57683
+2012-10-09 23:11:35,969 - INFO  [Comm2012-10-09 23:12:51,336 - INFO  [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2193:NIOServerCnxn$Factory@251] - Accepted socket connection 2012-10-09 23:13:18,001 - INFO  [SessionTracker:ZooKeeperServer@316] - Expiring session 0x33a469cf8930000, timeout of 4000ms exceeded
+2012-10-09 23:13:18,001 - INFO  [ProcessThread:-1:PrepRequestProcessor@399] - Processed session termination for sessionid: 0x33a469cf8930000
+2012-10-09 23:13:41,442 - WARN  [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2192:NIOServerCnxn@634] - EndOfStreamException: Unable to read additional data from client sessionid 0x23a469cbf6c0000, likely client has closed socket
+2012-10-09 23:13:41,443 - INFO  [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2192:NIOServerCnxn@1435] - Closed socket connection for client /127.0.0.1:57683 which had sessionid 0x23a469cbf6c0000
+2012-10-09 23:13:46,000 - INFO  [SessionTracker:ZooKeeperServer@316] - Exp2012-10-09 23:14:31,127 - INFO  [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2193:NIOServerCnxn$Factory@251] - Accepted socket connection from /127.0.0.1:51980
+2012-10-09 23:14:31,131 - INFO  [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2193:NIOServerCnxn@777] - Client attempting to establish new session at /127.0.0.1:51980
+2012-10-09 23:14:31,172 - INFO  [CommitProcessor:3:NIOServerCnxn@1580] - Established session 0x33a469cf8930001 with negotiated timeout 4000 for client /127.0.0.1:512012-10-09 23:15:30,000 - INFO  [SessionTracker:ZooKeeperServer@316] - Expiring session 0x33a469cf8930001, timeout of 4000ms exceeded
+2012-10-09 23:15:30,001 - INFO  [ProcessThread:-1:PrepRequestProcessor@399] - Processed session termination for sessionid: 0x33a469cf8930001
+2012-10-10 00:52:32,557 - ERROR [LearnerHandler-/127.0.0.1:60367:LearnerHandler@499] - Unexpected exception causing shutdown while sock sti2012-10-10 00:52:32,591 - WARN  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Follower@82] - Exception when following the leader
+java.net.SocketException: Connection reset
+	at java.net.SocketInputStream.read(SocketInputStream.java:185)
+	at java.io.BufferedInputStream.fill(BufferedInputStream.java:235)
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:254)
+	at java.io.DataInputStream.readInt(DataInputStream.java:387)
+	at org.apache.jute.BinaryInputArchive.readInt(BinaryInputArchive.java:63)
+	at org.apache.zookeeper.server.quorum.QuorumPacket.deserialize(QuorumPacket.java:84)
+	at org.apache.jute.BinaryInputArchive.readRecord(BinaryInputArchive.java:108)
+	at org.apache.zookeeper.server.quorum.Learner.readPacket(Learner.java:148)
+	at org.apache.zookeeper.server.quorum.Follower.followLeader(Follower.java:78)
+	at org.apache.zookeeper.server.quorum.QuorumPeer.run(QuorumPeer.java:645)
+2012-10-10 00:52:32,592 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:Follower@165] - shutdown called
+java.lang.Exception: shutdown Follower
+	at org.apache.zookeeper.server.quorum.Follower.shutdown(Follower.java:165)
+	at org.apache.zookeeper.server.quorum.QuorumPeer.run(QuorumPeer.java:649)
+2012-10-10 00:52:32,593 - INFO  [FollowerRequestProcessor:3:FollowerRequestProcessor@93] - FollowerRequestProcessor exited loop!
+2012-10-10 00:52:32,593 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:FinalRequestProcessor@370] - shutdown of request processor complete
+2012-10-10 00:52:32,593 - INFO  [CommitProcessor:3:CommitProcessor@148] - CommitProcessor exited loop!
+2012-10-10 00:52:32,611 - INFO  [SyncThread:3:SyncRequestProcessor@151] - SyncRequestProcessor exited!
+2012-10-10 00:52:32,612 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2193:QuorumPeer@621] - LOOKING
+2012-10-10 00:52:32,688 - INFO  [QuorumPeer:/0:0:0:02012-10-10 00:52:32,754 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 1 (n.leader), 42949672972 (n.zx2012-10-10 00:52:32,755 - INFO  [WorkerReceiver Thread:FastLeaderEl2012-10-10 00:52:32,806 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 3 (n.leader), 42949672972 (n.zxid), 2 (n.round), LOOKING (n.state), 1 (n.sid), LEADING (my state)
+2012-10-10 00:52:32,830 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 3 (n.leader), 42949672972 (n.zxid), 2 (n.round), LOOKING (n.state), 3 (n.sid), LEADING (my state)
+2012-10-10 00:52:33,562 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2192:Leader@411] - Shutdown called
+java.lang.Exception: shutdown Leader! reason: Only 0 followers, need 1
+	at org.apache.zookeeper.server.quorum.Leader.shutdown(Leader.java:411)
+	at org.apache.zookeeper.server.quorum.Leader.lead(Leader.java:388)
+	at org.apache.zookeeper.server.quorum.QuorumPeer.run(QuorumPeer.java:658)
+2012-10-10 00:52:33,563 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2192:FinalRequestProcessor@370] - shutdown of request processor complete
+2012-10-10 00:52:33,563 - INFO  [Thread-4:Leader$LearnerCnxAcceptor@246] - exception while shutting down acceptor: java.net.SocketException: Socket closed
+2012-10-10 00:52:33,563 - INFO  [ProcessThread:-1:PrepRequestProcessor@128] - PrepRequestProcessor exited loop!
+2012-10-10 00:52:33,564 - INFO  [CommitProcessor:2:CommitProcessor@148] - CommitProcessor exited loop!
+2012-10-10 00:52:33,564 - INFO  [SyncThread:2:SyncRequestProcessor@151] - SyncRequestProcessor exited!
+2012-10-10 00:52:33,565 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2192:QuorumPeer@621] - LOOKING
+2012-10-10 00:52:33,568 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2192:FileSnap2012-10-10 00:52:33,596 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 2 (n.leader), 42949672972 (n.zxid), 2 (n.round), LOOKING (n.state), 2 (n.sid), LEADING (my state)
+2012-10-10 00:52:33,627 - INFO  [LearnerHandler-/127.0.0.1:44398:LearnerHandler@249] - Follower sid: 2 : info : org.apache.zookeeper.server.quorum.QuorumPeer$QuorumServer@1b4a74b
+2012-10-10 00:52:33,628 - INFO  [LearnerHandler-/127.0.0.1:44398:LearnerHandler@273] - Synchronizing with Follower sid: 2 maxCommittedLog =0 minCommittedLog = 0 peerLastZxid = a0000000c
+2012-10-10 00:52:33,630 - INFO  [LearnerHandler-/127.0.0.1:44398:LearnerHandler@357] - Sending snapshot last zxid of peer is 0xa0000000c  zxid of leader is 0xb00000000sent zxid of db as 0xa0000000c
+2012-10-10 00:52:33,637 - WARN  [LearnerHandler-/127.0.0.1:44398:Leader@492] - Commiting zxid 0xb00000000 from /127.0.0.1:2990 not first!
+2012-10-10 00:52:33,637 - WARN  [LearnerHandler-/127.0.0.1:44398:Leader@494] - First is 0
+2012-10-10 00:52:33,637 - INFO  [LearnerHandler-/127.0.0.1:44398:Leader@518] - Have quorum of supporters; starting up and setting last processed zxid: 47244640256
+2012-10-10 00:52:34,011 - INFO  [LearnerHandler-/127.0.0.1:44399:LearnerHandler@249] - Follower sid: 1 : info : org.apache.zookeeper.server.quorum.QuorumPeer$QuorumServer@9505f
+2012-10-10 00:52:34,011 - INFO  [LearnerHandler-/127.0.0.1:44399:LearnerHandler@273] - Synchronizing with Follower sid: 1 maxCommittedLog =0 minCommittedLog = 0 peerLastZxid = a0000000c
+2012-10-10 00:52:34,012 - INFO  [LearnerHandler-/127.0.0.1:44399:LearnerHandler@357] - Sending snapshot last zxid of peer is 0xa0000000c  zxid of leader is 0xb00000000sent zxid of db as 0xb00000000
+acker:SessionTrackerImpl@161] - SessionTrackerImpl exited loop!
+(n.zxid), 1 (n.round), LOOKING (n.state), 3 (n.sid), FOLLOWING (my state)
+2012-10-09 23:10:23,296 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 3 (n.leader), 38654705681 (n.zxid), 2 (n.round), LOOKING (n.state), 3 (n.sid), FOLLOWING (my state)
+2012-10-09 23:10:33,575 - INFO  [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2191:NIOServerCnxn$Factory@251] - Accepted socket connection from /127.0.0.1:50376
+2012-10-09 23:10:33,581 - INFO  [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2191:NIOServerCnxn@777] - Client attempting to establish new session at /127.0.0.1:50376
+2012-10-09 23:10:33,584 - WARN  [QuorumPeer:/0:0:0:0:0:0:0:0:2191:Follower@116] - Got zxid 0xa00000001 expected 0x1
+2012-10-09 23:10:33,585 - INFO  [SyncThread:1:FileTxnLog@199] - Creating new log file: log.a00000001
+2012-10-09 23:10:33,729 - INFO  [CommitProcessor:1:NIOServerCnxn@1580] - Established session 0x13a469cbf630000 with negotiated timeout 4000 for client /127.0.0.1:50376
+2012-10-09 23:13:43,851 - WARN  [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2191:NIOServerCnxn@634] - EndOfStreamException: Unable to read additional data from client sessionid 0x13a469cbf630000, likely client has closed socket
+2012-10-09 23:13:43,852 - INFO  [NIOServerCxn.Factory:0.0.0.0/0.0.0.0:2191:NIOServerCnxn@1435] - Closed socket connection for client /127.0.0.1:50376 which had sessionid 0x13a469cbf630000
+2012-10-10 00:52:32,569 - WARN  [QuorumPeer:/0:0:0:0:0:0:0:0:2191:Follower@82] - Exception when following the leader
+java.io.EOFException
+	at java.io.DataInputStream.readInt(DataInputStream.java:392)
+	at org.apache.jute.BinaryInputArchive.readInt(BinaryInputArchive.java:63)
+	at org.apache.zookeeper.server.quorum.QuorumPacket.deserialize(QuorumPacket.java:84)
+	at org.apache.jute.BinaryInputArchive.readRecord(BinaryInputArchive.java:108)
+	at org.apache.zookeeper.server.quorum.Learner.readPacket(Learner.java:148)
+	at org.apache.zookeeper.server.quorum.Follower.followLeader(Follower.java:78)
+	at org.apache.zookeeper.server.quorum.QuorumPeer.run(QuorumPeer.java:645)
+2012-10-10 00:52:32,570 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2191:Follower@165] - shutdown called
+java.lang.Exception: shutdown Follower
+	at org.apache.zookeeper.server.quorum.Follower.shutdown(Follower.java:165)
+	at org.apache.zookeeper.server.quorum.QuorumPeer.run(QuorumPeer.java:649)
+2012-10-10 00:52:32,571 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2191:FinalRequestProcessor@370] - shutdown of request processor complete
+2012-10-10 00:52:32,573 - INFO  [CommitProcessor:1:CommitProcessor@148] - CommitProcessor exited loop!
+2012-10-10 00:52:32,589 - INFO  [FollowerRequestProcessor:1:FollowerRequestProcessor@93] - FollowerRequestProcessor exited loop!
+2012-10-10 00:52:32,589 - INFO  [SyncThread:1:SyncRequestProcessor@151] - SyncRequestProcessor exited!
+2012-10-10 00:52:32,593 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2191:QuorumPeer@621] - LOOKING
+2012-10-10 00:52:32,677 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2191:FileSnap@82] - Reading snapshot /home/sagar/Downloads/zookeeper-3.3.5/data/server1/version-2/snapshot.900000011
+2012-10-10 00:52:32,752 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2191:FastLeaderElection@663] - New election. My id =  1, Proposed zxid = 42949672972
+2012-10-10 00:52:32,753 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 1 (n.leader), 42949672972 (n.zxid), 2 (n.round), LOOKING (n.state), 1 (n.sid), LOOKING (my state)
+2012-10-10 00:52:32,754 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 2 (n.leader), 38654705681 (n.zxid), 1 (n.round), LEADING (n.state), 2 (n.sid), LOOKING (my state)
+2012-10-10 00:52:32,805 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 3 (n.leader), 42949672972 (n.zxid), 2 (n.round), LOOKING (n.state), 3 (n.sid), LOOKING (my state)
+2012-10-10 00:52:32,805 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2191:FastLeaderElection@721] - Updating proposal
+2012-10-10 00:52:32,806 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 3 (n.leader), 42949672972 (n.zxid), 2 (n.round), LOOKING (n.state), 1 (n.sid), LOOKING (my state)
+2012-10-10 00:52:32,807 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 2 (n.leader), 38654705681 (n.zxid), 1 (n.round), LEADING (n.state), 2 (n.sid), LOOKING (my state)
+2012-10-10 00:52:33,008 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2191:QuorumPeer@643] - FOLLOWING
+2012-10-10 00:52:33,008 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2191:ZooKeeperServer@154] - Created server with tickTime 2000 minSessionTimeout 4000 maxSessionTimeout 40000 datadir /home/sagar/Downloads/zookeeper-3.3.5/data/server1/version-2 snapdir /home/sagar/Downloads/zookeeper-3.3.5/data/server1/version-2
+2012-10-10 00:52:33,009 - WARN  [QuorumPeer:/0:0:0:0:0:0:0:0:2191:Learner@228] - Unexpected exception, tries=0, connecting to localhost/127.0.0.1:2990
+java.net.ConnectException: Connection refused
+	at java.net.PlainSocketImpl.socketConnect(Native Method)
+	at java.net.AbstractPlainSocketImpl.doConnect(AbstractPlainSocketImpl.java:327)
+	at java.net.AbstractPlainSocketImpl.connectToAddress(AbstractPlainSocketImpl.java:193)
+	at java.net.AbstractPlainSocketImpl.connect(AbstractPlainSocketImpl.java:180)
+	at java.net.SocksSocketImpl.connect(SocksSocketImpl.java:384)
+	at java.net.Socket.connect(Socket.java:546)
+	at org.apache.zookeeper.server.quorum.Learner.connectToLeader(Learner.java:220)
+	at org.apache.zookeeper.server.quorum.Follower.followLeader(Follower.java:65)
+	at org.apache.zookeeper.server.quorum.QuorumPeer.run(QuorumPeer.java:645)
+2012-10-10 00:52:33,587 - INFO  [WorkerReceiver Thread:FastLeaderElection@496] - Notification: 2 (n.leader), 42949672972 (n.zxid), 2 (n.round), LOOKING (n.state), 2 (n.sid), FOLLOWING (my state)
+2012-10-10 00:52:34,012 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2191:Learner@294] - Getting a snapshot from leader
+2012-10-10 00:52:34,013 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2191:Learner@326] - Setting leader epoch b
+2012-10-10 00:52:34,015 - INFO  [QuorumPeer:/0:0:0:0:0:0:0:0:2191:FileTxnSnapLog@254] - Snapshotting: b00000000
