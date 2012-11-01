@@ -1,14 +1,13 @@
 package zkGla;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
+
 import java.io.*;
+
 
 
 
@@ -18,7 +17,7 @@ import java.io.*;
 
 
 
-public class StateVector extends Gla implements java.io.Serializable {
+public class StateVectorViaChild extends Gla implements java.io.Serializable {
 	
 	int totalProposer;
 	int myProposerId;		
@@ -29,8 +28,10 @@ public class StateVector extends Gla implements java.io.Serializable {
 		int size;
 		int[] list;		
 	}
+	public void ProposeValue(byte[] val){}
+	
 		
-	public StateVector(String address, int totalProp, int myId){
+	public StateVectorViaChild(String address, int totalProp, int myId){
 		super(address);
 		totalProposer = totalProp;
 		myProposerId = myId;
@@ -50,7 +51,13 @@ public class StateVector extends Gla implements java.io.Serializable {
 			//ObjectInputStream in = new ObjectInputStream(bin);
 			
 			//String stateString = in.readUTF();
-    		String stateString = new String(oldByteValue);    		
+			//System.out.println("Debug");
+			if(oldByteValue == null	) return null;
+    		String stateString = new String(oldByteValue);
+    		//System.out.println("Debug" + stateString);
+			if(stateString==null){
+				return null;
+			}
 			String[] stateTokens = stateString.split(":");
 			StateObject currObject = new StateObject();
 			currObject.size= Integer.parseInt(stateTokens[0]);
@@ -92,12 +99,12 @@ public class StateVector extends Gla implements java.io.Serializable {
     	stateObj.size = totalProposer;
     	stateObj.list = new int[totalProposer];
     	int intVal = Integer.parseInt(updateValue);
-    	if(intVal > stateVector[myProposerId]){
-    		stateObj.list[myProposerId] = intVal;
+    	if(intVal > stateVector[myProposerId]){    		
+    		stateVector[myProposerId] = intVal;
     	}
     	else return null;
     	for(int i=0;i<totalProposer;i++){
-    		if(i!=myProposerId)stateObj.list[i] = stateVector[i]; 
+    		stateObj.list[i] = stateVector[i]; 
     	}
     	return ObjToByte(stateObj);
     }
@@ -144,29 +151,38 @@ public class StateVector extends Gla implements java.io.Serializable {
     	else return null;
     }
     
-    public void ProposeValue(byte[] proposedByteValue){    	
-    	    	
+    public byte[] ReadValueViaChild(){		
+		for(int i=0;i<totalProposer;i++){
+			if(!TestCreateZnode(ObjToByte(initialSO), root+i)){
+				System.out.println("Not all child nodes are created");
+			}
+		}
+		byte[] finalValue = ReadValue(root+"0");
+		byte[] childValue;
+		for(int i=1;i<totalProposer;i++){
+			childValue = ReadValue(root+i);
+			if(childValue == null) System.out.println("Error in ");
+			finalValue = JoinValue(finalValue, childValue);
+		}
+		return finalValue;
+    }
+    
+    
+    public void ProposeValueViaChild(byte[] proposedByteValue){    	
+    	
     	byte[] oldByteValue;	            	
     	Version oldVersion = new Version();    	
-    	int retryCount = 20;
-    	if(!TestCreateZnode(ObjToByte(initialSO), root)){
-			System.out.println("Error znode can't be initialised");
+    	if(!TestCreateZnode(ObjToByte(initialSO), root+myProposerId)){
+			System.out.println("Error znode can't be initialised"+root+myProposerId);
 			return;
 		}
-    	
-    	while(retryCount>0)
-    	{    		
-    		oldByteValue = ReadValue(oldVersion, root);    			
-    		byte[] newByteValue;
-    		
-    		if(oldByteValue!=null){
-    			newByteValue = JoinValue(oldByteValue,proposedByteValue);
-    			if(CheckEquality(oldByteValue,newByteValue)) break;
-    		    
-    			if(SetValue(newByteValue, oldVersion.getVersion(), root)) {
-    				//System.out.println("Value set on try no: " + (11 -retryCount));
-    				break;
-    			}
+    	//oldByteValue = ReadValue(oldVersion);
+    	//Here proposedValue should be greater than oldByteValue by design
+    	int retryCount=10;
+    	while(retryCount>0){
+    		if(SetValue(proposedByteValue, -1, root+myProposerId)){
+    			//System.out.println("Value set on try"+(11-retryCount));
+    			break;
     		}
         	retryCount--;        	
         }
@@ -174,8 +190,8 @@ public class StateVector extends Gla implements java.io.Serializable {
     		System.out.println("Value couldn't be written");
     	}          
 	              
-     }   
-   
+     }
+    
 	
     
     public static boolean ParseOptions(String[] args) {
@@ -205,7 +221,7 @@ public class StateVector extends Gla implements java.io.Serializable {
     	}    	
     	int totalProposer = Integer.parseInt(args[1]);
     	int myId = Integer.parseInt(args[2]);
-    	StateVector sVec = new StateVector(args[0], totalProposer, myId);
+    	StateVectorViaChild sVec = new StateVectorViaChild(args[0], totalProposer, myId);
     	
     	String inputCmd;
     	String[] inputArgs;
@@ -223,13 +239,13 @@ public class StateVector extends Gla implements java.io.Serializable {
 				}
 				if(inputArgs[0].equalsIgnoreCase("readValue")){
 					Version version = new Version();
-		    		byte[] value = sVec.ReadValue(version, sVec.root);
+		    		byte[] value = sVec.ReadValueViaChild();
 		    		if(value!=null)System.out.println(sVec.PrintValue(value));
 		    		//System.out.println("Value is: " + value);
 		    	}
 		    	else if(inputArgs[0].equalsIgnoreCase("proposeValue")){
 		    		byte[] proposeValue = sVec.GetProposedValue(inputArgs[1]);
-		    		if(proposeValue!=null)sVec.ProposeValue(proposeValue);
+		    		if(proposeValue!=null)sVec.ProposeValueViaChild(proposeValue);
 		    	}
 		    	else if(inputArgs[0].equalsIgnoreCase("quit")){
 		    		break;

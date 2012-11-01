@@ -12,8 +12,6 @@ import java.util.List;
 
 
 public class StateInt extends Gla {
-	
-
 	public StateInt(String address){
 		super(address);
 	}
@@ -62,14 +60,14 @@ public class StateInt extends Gla {
     	int retryCount = 10;
     	while(retryCount>0)
     	{	            		
-    		oldByteValue = ReadValue(oldVersion);  		
+    		oldByteValue = ReadValue(oldVersion, root);  		
     			 		
     		//System.out.println("oldversion" + oldVersion.getVersion());
     		
     		byte[] newByteValue = JoinValue(oldByteValue,proposedByteValue);
     		if(CheckEquality(oldByteValue,newByteValue)) break;
     			                		                	
-        	if(SetValue(newByteValue, oldVersion.getVersion())) break;
+        	if(SetValue(newByteValue, oldVersion.getVersion(), root)) break;
         	retryCount--;
         	System.out.println("Retrying to set data");
         }
@@ -123,7 +121,7 @@ public class StateInt extends Gla {
 				}
 				if(inputArgs[0].equalsIgnoreCase("readValue")){
 					Version version = new Version();
-		    		byte[] value = sInt.ReadValue(version);
+		    		byte[] value = sInt.ReadValue(version, sInt.root);
 		    		sInt.PrintValue(value);
 		    		//System.out.println("Value is: " + value);
 		    	}

@@ -1,6 +1,6 @@
 package zkGla;
 
-public interface ILatticeValue extends java.io.Serializable {
+public interface ILatticeValue {
 	
 	//class to have access of version of object
 	 public class Version{    	
@@ -15,12 +15,12 @@ public interface ILatticeValue extends java.io.Serializable {
 	    }
 
 	 //writes value if version of state matches with oldVersion
-	public boolean SetValue (byte[] value, int oldVersion);
+	public boolean SetValue (byte[] value, int oldVersion, String nodeName);
 		
 	//value of state is fetched 	
-	public byte[] ReadValue(Version version);
+	public byte[] ReadValue(Version version, String nodeName);
 	
-	public byte[] ReadValue();
+	public byte[] ReadValue(String nodeName);
 	
 	//new value from client is proposed using this method. Calls JoinValue and SetValue internally
 	abstract void ProposeValue(byte[] proposeValue);

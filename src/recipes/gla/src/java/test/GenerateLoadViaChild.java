@@ -11,8 +11,9 @@ import java.util.Random;
 import zkGla.ILatticeValue;
 import zkGla.StateVector;
 import zkGla.ILatticeValue.Version;
+import zkGla.StateVectorViaChild;
 
-public class GenerateLoad {
+public class GenerateLoadViaChild {
 	
 	
 
@@ -26,7 +27,7 @@ public class GenerateLoad {
 		public int totalOperations;
 		public int updatePercent;
 		public int myId;
-		public StateVector stateVec;
+		public StateVectorViaChild stateVecChild;
 		GlaThread(){}
 		GlaThread(int to, int up, int id, String add, int totProp, String name){
 			super(name);
@@ -34,7 +35,7 @@ public class GenerateLoad {
 			updatePercent = up;
 			myId = id;
 			//System.out.println(add + " "+id+" "+name);
-			stateVec = new StateVector(add, totProp, id);
+			stateVecChild = new StateVectorViaChild(add, totProp, id);
 			start();
 		}
 		
@@ -57,11 +58,11 @@ public class GenerateLoad {
 				 				 
 				 int decide  = rand.nextInt(100);
 				 if(decide > updatePercent){					 
-			    	 byte[] value = stateVec.ReadValue(stateVec.root);
+			    	 byte[] value = stateVecChild.ReadValueViaChild();
 			    	 /*if(value!=null)
 						try {
 							//synchronized(lockObject){
-								out.write(stateVec.PrintValue(value)+"\n");
+								out.write(stateVecChild.PrintValue(value)+"\n");
 							//}
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
@@ -71,8 +72,8 @@ public class GenerateLoad {
 				 else{
 					 //int updateValue = rand1.nextInt(10*totalOperations);
 					 int updateValue  = i;
-					 byte[] proposeValue = stateVec.GetProposedValue(((Integer)updateValue).toString());
-			    	 if(proposeValue!=null)stateVec.ProposeValue(proposeValue);					 
+					 byte[] proposeValue = stateVecChild.GetProposedValue(((Integer)updateValue).toString());
+			    	 if(proposeValue!=null)stateVecChild.ProposeValueViaChild(proposeValue);					 
 				}
 			}
 			long endTime = System.currentTimeMillis();
@@ -103,7 +104,7 @@ public class GenerateLoad {
 			e1.printStackTrace();
 			return;
 		}   	
-    	GenerateLoad gLoad = new GenerateLoad();
+    	GenerateLoadViaChild gLoad = new GenerateLoadViaChild();
     	int totalProposers = Integer.parseInt(args[1]);
     	String address = args[0];
     	    	

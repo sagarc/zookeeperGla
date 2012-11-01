@@ -26,17 +26,16 @@ import zkGla.ILatticeValue.Version;
 
 
 
-abstract class Gla implements Watcher, ILatticeValue {
+abstract class Gla implements Watcher, ILatticeValue, java.io.Serializable {
 
-    static ZooKeeper zk = null;
-    static Integer mutex;   
-
-    static String root = "/gla";
+    ZooKeeper zk = null;
+    static Integer mutex;    
+    public static String root = "/gla";
     
     Gla(){};
 
-    Gla(String address) {
-    	zk =null;
+    Gla(String address) {    	
+    	
         if(zk == null){
             try {
                 System.out.println("Starting ZK:");
@@ -44,8 +43,7 @@ abstract class Gla implements Watcher, ILatticeValue {
                 System.out.println("Finished starting ZK: " + zk);
                 //root = "/gla";
             } catch (IOException e) {
-                System.out.println(e.toString());
-                zk = null;
+                System.out.println(e.toString());                
             }
         }    
     }
@@ -58,12 +56,12 @@ abstract class Gla implements Watcher, ILatticeValue {
     
     public abstract void ProposeValue(byte[] proposeValue);
     
-    public byte[] ReadValue(){
+    public byte[] ReadValue(String nodeName){
     	if (zk != null) {
     		Stat s = null;
 			try {
 				//System.out.println("root:" + root);
-				s = zk.exists(root, false);
+				s = zk.exists(nodeName, false);
 			} catch (KeeperException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -75,7 +73,7 @@ abstract class Gla implements Watcher, ILatticeValue {
     		byte[] byteValue;
     		Stat oldStat = s;
     		try {
-				byteValue = zk.getData(root,false, oldStat);				
+				byteValue = zk.getData(nodeName,false, oldStat);				
 				return byteValue;
 			} catch (KeeperException e) {
 				// TODO Auto-generated catch block
@@ -89,11 +87,11 @@ abstract class Gla implements Watcher, ILatticeValue {
     	return null;
     }
     
-    public byte[] ReadValue(Version version){
+    public byte[] ReadValue(Version version, String nodeName){
     	if (zk != null) {
     		Stat s = null;
 			try {
-				s = zk.exists(root, false);
+				s = zk.exists(nodeName, false);
 			} catch (KeeperException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -105,7 +103,7 @@ abstract class Gla implements Watcher, ILatticeValue {
     		byte[] byteValue;
     		Stat oldStat = s;
     		try {
-				byteValue = zk.getData(root,false, oldStat);
+				byteValue = zk.getData(nodeName,false, oldStat);
 				version.setVersion(oldStat.getVersion());
 				return byteValue;
 			} catch (KeeperException e) {
@@ -120,22 +118,23 @@ abstract class Gla implements Watcher, ILatticeValue {
     	return null;
     }
   
-    public boolean SetValue(byte[] value, int oldVersion){
+    public boolean SetValue(byte[] value, int oldVersion, String nodeName){
     	if (zk != null) {
 	        try {	        	
 	        	                
-	            Stat s = zk.exists(root, false);
+	            Stat s = zk.exists(nodeName, false);
 	            if (s == null) {
-	                zk.create(root, value, Ids.OPEN_ACL_UNSAFE,
+	                zk.create(nodeName, value, Ids.OPEN_ACL_UNSAFE,
 	                        CreateMode.PERSISTENT); 
 	                return true;
 	            }
 	            else{	            	
 	            	Stat newStat= s;
 	            	int newVersion;    		            			                		                	
-                	newStat = zk.setData(root,value,oldVersion);
-                	newVersion = newStat.getVersion();	                	
-                	if(newVersion == oldVersion+1) return true;
+                	newStat = zk.setData(nodeName,value,oldVersion);
+                	if(newStat!=null) return true;
+                		//newVersion = newStat.getVersion();	                	
+                	//if(newVersion == oldVersion+1) return true;
                 	return false;
 	            }                       
 	       } catch (KeeperException e) {
@@ -150,26 +149,29 @@ abstract class Gla implements Watcher, ILatticeValue {
     	return false;
     }
         
-    public boolean TestCreateZnode(byte[] initialValue){
+    public boolean TestCreateZnode(byte[] initialValue, String nodeName){
     	if (zk != null) {
-	        try {	        	
-	        	//System.out.println("root is "+root);                
-	            Stat s = zk.exists(root, false);
-	            if (s == null) {
-	                zk.create(root, initialValue, Ids.OPEN_ACL_UNSAFE,
-	                        CreateMode.PERSISTENT); 
+	        try {        	 
+	        	//System.out.println(zk.toString());
+	            Stat s = zk.exists(nodeName, false);
+	            if (s == null) {	            	
+	                zk.create(nodeName, initialValue, Ids.OPEN_ACL_UNSAFE,
+	                        CreateMode.PERSISTENT);
+	                System.out.println("Creating node "+nodeName);
 	                return true;
 	            }
 	            return true;
 	        } catch (KeeperException e) {
 	            System.out
-	                    .println("Keeper exception when instantiating gla: "
+	                    .println(" TestCreateZnode " +zk.toString()+" + Keeper exception when instantiating gla: "
 	                            + e.toString());
 	        } catch (InterruptedException e) {
 	            System.out.println("Interrupted exception");
 	        }
+	        System.out.println("Exception raised");
 	        return false;
     	}
+    	System.out.println("zk connection doesn't exist");
     	return false;
     }
 }
