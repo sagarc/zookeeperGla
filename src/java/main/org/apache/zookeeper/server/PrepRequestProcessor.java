@@ -335,6 +335,28 @@ public class PrepRequestProcessor extends Thread implements RequestProcessor {
                 nodeRecord.stat.setVersion(version);
                 addChangeRecord(nodeRecord);
                 break;
+            case OpCode.proposeData:
+                txnHeader = new TxnHeader(request.sessionId, request.cxid, zks
+                        .getNextZxid(), zks.getTime(), OpCode.proposeData);
+                zks.sessionTracker.checkSession(request.sessionId, request.getOwner());
+                setDataRequest = new SetDataRequest();
+                ZooKeeperServer.byteBuffer2Record(request.request,
+                        setDataRequest);
+                path = setDataRequest.getPath();
+                nodeRecord = getRecordForPath(path);
+                checkACL(zks, nodeRecord.acl, ZooDefs.Perms.WRITE,
+                        request.authInfo);
+                version = setDataRequest.getVersion();
+                currentVersion = nodeRecord.stat.getVersion();
+                if (version != -1 && version != currentVersion) {
+                    throw new KeeperException.BadVersionException(path);
+                }
+                version = currentVersion + 1;
+                txn = new SetDataTxn(path, setDataRequest.getData(), version);
+                nodeRecord = nodeRecord.duplicate(txnHeader.getZxid());
+                nodeRecord.stat.setVersion(version);
+                addChangeRecord(nodeRecord);
+                break;
             case OpCode.setACL:
                 txnHeader = new TxnHeader(request.sessionId, request.cxid, zks
                         .getNextZxid(), zks.getTime(), OpCode.setACL);

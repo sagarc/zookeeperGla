@@ -66,6 +66,7 @@ public class ZooKeeperMain {
         commandMap.put("create", "[-s] [-e] path data acl");
         commandMap.put("delete","path [version]");
         commandMap.put("set","path data [version]");
+        commandMap.put("propose","path data");
         commandMap.put("get","path [watch]");
         commandMap.put("ls","path [watch]");
         commandMap.put("ls2","path [watch]");
@@ -686,6 +687,13 @@ public class ZooKeeperMain {
             path = args[1];
             stat = zk.setData(path, args[2].getBytes(),
                     args.length > 3 ? Integer.parseInt(args[3]) : -1);
+            printStat(stat);
+        } else if (cmd.equals("propose") && args.length >= 3) {
+            path = args[1];
+            byte[] data = zk.proposeData(path, args[2].getBytes(),
+                    args.length > 3 ? Integer.parseInt(args[3]) : -1, watch, stat);
+            data = (data == null)? "null".getBytes() : data;
+            System.out.println(new String(data));
             printStat(stat);
         } else if (cmd.equals("aget") && args.length >= 2) {
             path = args[1];

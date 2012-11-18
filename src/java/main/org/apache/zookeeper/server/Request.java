@@ -106,6 +106,7 @@ public class Request {
         case OpCode.exists:
         case OpCode.getData:
         case OpCode.setData:
+        case OpCode.proposeData:
         case OpCode.sync:
         case OpCode.getACL:
         case OpCode.setACL:
@@ -135,6 +136,7 @@ public class Request {
         case OpCode.delete:
         case OpCode.setACL:
         case OpCode.setData:
+        case OpCode.proposeData:
             return true;
         default:
             return false;

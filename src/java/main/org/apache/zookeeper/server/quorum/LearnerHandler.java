@@ -86,6 +86,7 @@ public class LearnerHandler extends Thread {
 
     LearnerHandler(Socket sock, Leader leader) throws IOException {
         super("LearnerHandler-" + sock.getRemoteSocketAddress());
+        System.out.println("89:Learnerhandler");
         this.sock = sock;
         this.leader = leader;
         leader.addLearnerHandler(this);

@@ -127,7 +127,8 @@ public class Leader {
     ServerSocket ss;
 
     Leader(QuorumPeer self,LeaderZooKeeperServer zk) throws IOException {
-        this.self = self;
+    	System.out.println("130:Leader");
+    	this.self = self;
         try {
             ss = new ServerSocket();
             ss.setReuseAddress(true);

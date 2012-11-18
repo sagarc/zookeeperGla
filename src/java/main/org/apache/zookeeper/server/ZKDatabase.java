@@ -80,6 +80,7 @@ public class ZKDatabase {
      * @param snapLog the FileTxnSnapLog mapping this zkdatabase
      */
     public ZKDatabase(FileTxnSnapLog snapLog) {
+    	System.out.println("83:ZkDatabase");
         dataTree = new DataTree();
         sessionsWithTimeouts = new ConcurrentHashMap<Long, Integer>();
         this.snapLog = snapLog;
@@ -325,7 +326,8 @@ public class ZKDatabase {
      * datatree/zkdatabase
      */
     public ProcessTxnResult processTxn(TxnHeader hdr, Record txn) {
-        return dataTree.processTxn(hdr, txn);
+        ProcessTxnResult res = dataTree.processTxn(hdr, txn);        
+        return res;
     }
 
     /**
@@ -369,6 +371,8 @@ public class ZKDatabase {
     throws KeeperException.NoNodeException {
         return dataTree.getData(path, stat, watcher);
     }
+    
+    
 
     /**
      * set watches on the datatree

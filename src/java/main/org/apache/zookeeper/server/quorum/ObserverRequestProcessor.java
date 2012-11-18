@@ -88,6 +88,7 @@ public class ObserverRequestProcessor extends Thread implements
                 case OpCode.create:
                 case OpCode.delete:
                 case OpCode.setData:
+                case OpCode.proposeData:
                 case OpCode.setACL:
                 case OpCode.createSession:
                 case OpCode.closeSession:

@@ -623,6 +623,41 @@ public class DataTree {
             return null;
         }
     }
+    
+    
+    public byte[] proposeData(String path, Stat stat, Watcher watcher,
+    			byte data[], int version, long zxid,
+    			long time)
+            throws KeeperException.NoNodeException {
+    	System.out.println("632: DataTree");
+        DataNode n = nodes.get(path);
+        if (n == null) {
+            throw new KeeperException.NoNodeException();
+        }
+        
+        byte lastdata[] = null;
+        synchronized (n) {
+            lastdata = n.data;
+            n.data = data;
+            n.stat.setMtime(time);
+            n.stat.setMzxid(zxid);
+            n.stat.setVersion(version);            
+        }
+        // now update if the path is in a quota subtree.           
+        if(stat!=null)n.copyStat(stat);
+        if (watcher != null) {
+            dataWatches.addWatch(path, watcher);
+        }
+        String lastPrefix;
+        if((lastPrefix = getMaxPrefixWithQuota(path)) != null) {
+          this.updateBytes(lastPrefix, (data == null ? 0 : data.length)
+              - (lastdata == null ? 0 : lastdata.length));
+        }
+        dataWatches.triggerWatch(path, EventType.NodeDataChanged);
+        return n.data;
+    }
+
+    
 
     public byte[] getData(String path, Stat stat, Watcher watcher)
             throws KeeperException.NoNodeException {
@@ -721,6 +756,8 @@ public class DataTree {
         public int type;
 
         public String path;
+        
+        public byte[] propValue;
 
         public Stat stat;
 
@@ -755,14 +792,18 @@ public class DataTree {
     public volatile long lastProcessedZxid = 0;
 
     public ProcessTxnResult processTxn(TxnHeader header, Record txn) {
-        ProcessTxnResult rc = new ProcessTxnResult();
-
+        
+    	ProcessTxnResult rc = new ProcessTxnResult();
+        //proposedValue = null;
+        System.out.println("795: DataTree - ProcessTxn");
         String debug = "";
         try {
             rc.clientId = header.getClientId();
             rc.cxid = header.getCxid();
             rc.zxid = header.getZxid();
             rc.type = header.getType();
+            rc.propValue = null;
+            System.out.println("802: DataTree -headerType" + header.getType());
             rc.err = 0;
             if (rc.zxid > lastProcessedZxid) {
                 lastProcessedZxid = rc.zxid;
@@ -789,10 +830,26 @@ public class DataTree {
                     SetDataTxn setDataTxn = (SetDataTxn) txn;
                     debug = "Set data for  transaction for "
                             + setDataTxn.getPath();
+                    System.out.println("828: DataTree- Setdata:" + debug);
                     rc.stat = setData(setDataTxn.getPath(), setDataTxn
                             .getData(), setDataTxn.getVersion(), header
                             .getZxid(), header.getTime());
                     break;
+                case OpCode.proposeData:
+                	/*if(txn == null) {
+                    	System.out.println("794:DataTree");
+                    	return null;
+                    }*/
+                    SetDataTxn proposeDataTxn = (SetDataTxn) txn;
+                    debug = "Propose data for  transaction for "
+                            + proposeDataTxn.getPath();
+                    System.out.println("837: DataTree- Proposedata:" + debug);
+                    //proposedValue = proposeData(proposeDataTxn.getPath(), rc.stat, null, proposeDataTxn
+                    rc.propValue = proposeData(proposeDataTxn.getPath(), rc.stat, null, proposeDataTxn        .getData(), proposeDataTxn.getVersion(), header
+                            .getZxid(), header.getTime());
+                   
+                    break;
+                    
                 case OpCode.setACL:
                     SetACLTxn setACLTxn = (SetACLTxn) txn;
                     debug = "Set ACL for  transaction for "

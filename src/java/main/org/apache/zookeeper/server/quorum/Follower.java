@@ -37,6 +37,7 @@ public class Follower extends Learner{
     final FollowerZooKeeperServer fzk;
     
     Follower(QuorumPeer self,FollowerZooKeeperServer zk) {
+    	System.out.println("40:Follower");
         this.self = self;
         this.zk=zk;
         this.fzk = zk;

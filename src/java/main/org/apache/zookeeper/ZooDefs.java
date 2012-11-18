@@ -49,6 +49,8 @@ public class ZooDefs {
         public final int ping = 11;
 
         public final int getChildren2 = 12;
+        
+        public final int proposeData = 13;
 
         public final int auth = 100;
 
@@ -109,5 +111,5 @@ public class ZooDefs {
 
     final public static String[] opNames = { "notification", "create",
             "delete", "exists", "getData", "setData", "getACL", "setACL",
-            "getChildren", "getChildren2", "getMaxChildren", "setMaxChildren", "ping" };
+            "getChildren", "getChildren2", "proposeData", "getMaxChildren", "setMaxChildren", "ping" };
 }

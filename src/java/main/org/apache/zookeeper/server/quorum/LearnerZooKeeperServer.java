@@ -36,7 +36,8 @@ public abstract class LearnerZooKeeperServer extends QuorumZooKeeperServer {
             DataTreeBuilder treeBuilder, ZKDatabase zkDb, QuorumPeer self)
         throws IOException
     {
-        super(logFactory, tickTime, minSessionTimeout, maxSessionTimeout,
+        
+    	super(logFactory, tickTime, minSessionTimeout, maxSessionTimeout,
                 treeBuilder, zkDb, self);
     }
 

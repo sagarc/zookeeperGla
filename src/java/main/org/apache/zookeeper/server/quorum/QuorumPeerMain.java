@@ -94,7 +94,8 @@ public class QuorumPeerMain {
     protected void initializeAndRun(String[] args)
         throws ConfigException, IOException
     {
-        QuorumPeerConfig config = new QuorumPeerConfig();
+    	System.out.println("97:QuorumPeerMain");
+    	QuorumPeerConfig config = new QuorumPeerConfig();
         if (args.length == 1) {
             config.parse(args[0]);
         }

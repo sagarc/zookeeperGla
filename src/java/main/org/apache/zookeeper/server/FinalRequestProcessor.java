@@ -74,7 +74,7 @@ public class FinalRequestProcessor implements RequestProcessor {
         this.zks = zks;
     }
 
-    public void processRequest(Request request) {
+    public void processRequest(Request request) {    	
         if (LOG.isDebugEnabled()) {
             LOG.debug("Processing request:: " + request);
         }
@@ -86,7 +86,7 @@ public class FinalRequestProcessor implements RequestProcessor {
         if (LOG.isTraceEnabled()) {
             ZooTrace.logRequest(LOG, traceMask, 'E', request, "");
         }
-        ProcessTxnResult rc = null;
+        ProcessTxnResult rc = null;        
         synchronized (zks.outstandingChanges) {
             while (!zks.outstandingChanges.isEmpty()
                     && zks.outstandingChanges.get(0).zxid <= request.zxid) {
@@ -103,7 +103,7 @@ public class FinalRequestProcessor implements RequestProcessor {
             if (request.hdr != null) {
                TxnHeader hdr = request.hdr;
                Record txn = request.txn;
-
+               System.out.println("107 FinalRequestProcessor");
                rc = zks.processTxn(hdr, txn);
             }
             // do not add non quorum packets to the queue.
@@ -248,6 +248,17 @@ public class FinalRequestProcessor implements RequestProcessor {
                 rsp = new GetDataResponse(b, stat);
                 break;
             }
+            case OpCode.proposeData: {
+                lastOp = "PROD";             
+                
+                Stat stat = new Stat();
+                //byte b[] = zks.getZKDatabase().proposeData(getDataRequest.getPath(), stat,
+                  //      getDataRequest.getWatch() ? cnxn : null);
+                //if(proposedValue == null) System.out.println("259:FinalRequest - Empty proposedValue");
+                rsp = new GetDataResponse(rc.propValue, stat);
+                System.out.println("260 FinalRequest");
+                break;
+            }
             case OpCode.setWatches: {
                 lastOp = "SETW";
                 SetWatches setWatches = new SetWatches();
@@ -356,6 +367,7 @@ public class FinalRequestProcessor implements RequestProcessor {
                     request.createTime, System.currentTimeMillis());
 
         try {
+        	System.out.println("371: FinalREquestPRocessor");
             cnxn.sendResponse(hdr, rsp, "response");
             if (closeSession) {
                 cnxn.sendCloseSession();

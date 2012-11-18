@@ -1027,7 +1027,8 @@ public class ZooKeeper {
     public Stat setData(final String path, byte data[], int version)
         throws KeeperException, InterruptedException
     {
-        final String clientPath = path;
+    	System.out.println("Setdata: 1030/Zookeeper");    	
+    	final String clientPath = path;
         PathUtils.validatePath(clientPath);
 
         final String serverPath = prependChroot(clientPath);
@@ -1041,8 +1042,9 @@ public class ZooKeeper {
         SetDataResponse response = new SetDataResponse();
         ReplyHeader r = cnxn.submitRequest(h, request, response, null);
         if (r.getErr() != 0) {
-            throw KeeperException.create(KeeperException.Code.get(r.getErr()),
-                    clientPath);
+            //throw KeeperException.create(KeeperException.Code.get(r.getErr()),
+               //     clientPath);
+        	return null;
         }
         return response.getStat();
     }
@@ -1058,6 +1060,7 @@ public class ZooKeeper {
     {
         final String clientPath = path;
         PathUtils.validatePath(clientPath);
+        
 
         final String serverPath = prependChroot(clientPath);
 
@@ -1071,6 +1074,47 @@ public class ZooKeeper {
         cnxn.queuePacket(h, new ReplyHeader(), request, response, cb,
                 clientPath, serverPath, ctx, null);
     }
+    
+    public byte[] proposeData(String path, byte[] data, int version, boolean watch, Stat stat)
+            throws KeeperException, InterruptedException {
+        return proposeData(path, data, version, watch ? watchManager.defaultWatcher : null, stat);
+    }
+    
+    public byte[] proposeData(final String path, byte data[], int version,
+            Watcher watcher, Stat stat) throws InterruptedException, KeeperException
+    {
+    	final String clientPath = path;
+        PathUtils.validatePath(clientPath);
+        
+        WatchRegistration wcb = null;
+        if (watcher != null) {
+            wcb = new DataWatchRegistration(watcher, clientPath);
+        }
+
+        final String serverPath = prependChroot(clientPath);
+
+        RequestHeader h = new RequestHeader();
+        h.setType(ZooDefs.OpCode.proposeData);
+        SetDataRequest request = new SetDataRequest();
+        request.setPath(serverPath);
+        request.setData(data);
+        request.setVersion(version);
+        GetDataResponse response = new GetDataResponse();
+        ReplyHeader r = cnxn.submitRequest(h, request, response, wcb);
+         
+        
+        //ReplyHeader r = cnxn.submitRequest(h, request, response, wcb);
+        if (r.getErr() != 0) {
+            throw KeeperException.create(KeeperException.Code.get(r.getErr()),
+                    clientPath);
+        }
+        if (stat != null) {
+            DataTree.copyStat(response.getStat(), stat);
+        }
+        return response.getData();
+    }
+
+    
 
     /**
      * Return the ACL and stat of the node of the given path.
