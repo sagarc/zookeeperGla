@@ -6,7 +6,7 @@ public interface ILatticeValue {
 	 public class Version{    	
 	    	int version;
 	    	public Version(){version=-1;}
-	    	void setVersion(int ver){
+	    	public void setVersion(int ver){
 	    		version = ver;
 	    	}
 	    	int getVersion(){

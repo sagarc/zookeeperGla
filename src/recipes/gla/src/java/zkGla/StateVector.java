@@ -23,8 +23,8 @@ public class StateVector extends Gla implements java.io.Serializable {
 	int totalProposer;
 	int myProposerId;		
 	int[] stateVector;
-	StateObject initialSO;
-	
+	public StateObject initialSO;
+	 
 	public class StateObject implements java.io.Serializable{
 		int size;
 		int[] list;		
@@ -66,8 +66,8 @@ public class StateVector extends Gla implements java.io.Serializable {
 			//return null;
 		//}
     } 
-	
-	private byte[] ObjToByte(StateObject stateObj){
+	 
+	public byte[] ObjToByte(StateObject stateObj){
     	//ByteArrayOutputStream bos = new ByteArrayOutputStream();
     	//try {
 			//ObjectOutputStream out = new ObjectOutputStream(bos);
@@ -149,10 +149,7 @@ public class StateVector extends Gla implements java.io.Serializable {
     	byte[] oldByteValue;	            	
     	Version oldVersion = new Version();    	
     	int retryCount = 20;
-    	if(!TestCreateZnode(ObjToByte(initialSO), root)){
-			System.out.println("Error znode can't be initialised");
-			return;
-		}
+    	
     	
     	while(retryCount>0)
     	{    		
@@ -209,6 +206,11 @@ public class StateVector extends Gla implements java.io.Serializable {
     	
     	String inputCmd;
     	String[] inputArgs;
+    	
+    	if(!sVec.TestCreateZnode(sVec.ObjToByte(sVec.initialSO), root)){
+			System.out.println("Error znode can't be initialised");
+			return;
+		}
     	while(true){
 	    	try {
 	    		inputCmd = "";

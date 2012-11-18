@@ -79,7 +79,7 @@ public class DataNode implements Record {
      *            the stat for this node.
      */
     public DataNode(DataNode parent, byte data[], Long acl, StatPersisted stat) {
-    	System.out.println("82:DataNode");
+    	//System.out.println("82:DataNode");
     	this.parent = parent;
         this.data = data;
         this.acl = acl;

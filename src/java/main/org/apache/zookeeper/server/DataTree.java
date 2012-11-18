@@ -57,6 +57,8 @@ import org.apache.zookeeper.txn.SetACLTxn;
 import org.apache.zookeeper.txn.SetDataTxn;
 import org.apache.zookeeper.txn.TxnHeader;
 
+//import zkGla.StateVectorImplicitJoin.StateObject;
+
 /**
  * This class maintains the tree data structure. It doesn't have any networking
  * or client connection code in it so that it can be tested in a stand alone
@@ -624,21 +626,65 @@ public class DataTree {
         }
     }
     
+    public class StateObject{
+		int size;
+		int[] list;		
+	}
+    
+    private StateObject ByteToObj(byte[] oldByteValue){   
+		String stateString = new String(oldByteValue);    		
+		String[] stateTokens = stateString.split(":");
+		StateObject currObject = new StateObject();
+		currObject.size= Integer.parseInt(stateTokens[0]);
+		currObject.list=new int[currObject.size];
+		for(int i=1;i<=currObject.size;i++){
+			currObject.list[i-1] = Integer.parseInt(stateTokens[i]);
+		}
+		return currObject;
+	} 
+	
+	private byte[] ObjToByte(StateObject stateObj){
+		String stateString="";
+		stateString+=stateObj.size;
+		for(int i=0;i<stateObj.size;i++){
+			stateString+=":"+stateObj.list[i];	
+		}
+		return stateString.getBytes();
+    }
+	
+	public byte[] JoinValue(byte[] oldByteValue, byte[] proposedByteValue){
+    	StateObject newValue = new StateObject();   	
+    	StateObject oldValue = ByteToObj(oldByteValue);
+    	StateObject proposedValue = ByteToObj(proposedByteValue);
+    	
+    	if(oldValue!=null && proposedValue!=null){
+	    	newValue.size = oldValue.size;
+	    	newValue.list = new int[newValue.size];
+	    	for(int i=0;i<newValue.size;i++){
+	    		if(oldValue.list[i] < proposedValue.list[i]) newValue.list[i] = proposedValue.list[i];
+	    		else newValue.list[i] = oldValue.list[i];
+	    	}
+	    	return ObjToByte(newValue);
+    	}
+    	else return null;
+    }   
     
     public byte[] proposeData(String path, Stat stat, Watcher watcher,
     			byte data[], int version, long zxid,
     			long time)
             throws KeeperException.NoNodeException {
-    	System.out.println("632: DataTree");
+    	//System.out.println("632: DataTree");
         DataNode n = nodes.get(path);
         if (n == null) {
             throw new KeeperException.NoNodeException();
         }
         
         byte lastdata[] = null;
+        byte joindata[]= null;
         synchronized (n) {
             lastdata = n.data;
-            n.data = data;
+            joindata = JoinValue(lastdata, data);
+            n.data = joindata;
             n.stat.setMtime(time);
             n.stat.setMzxid(zxid);
             n.stat.setVersion(version);            
@@ -795,7 +841,7 @@ public class DataTree {
         
     	ProcessTxnResult rc = new ProcessTxnResult();
         //proposedValue = null;
-        System.out.println("795: DataTree - ProcessTxn");
+        //System.out.println("795: DataTree - ProcessTxn");
         String debug = "";
         try {
             rc.clientId = header.getClientId();
@@ -803,7 +849,7 @@ public class DataTree {
             rc.zxid = header.getZxid();
             rc.type = header.getType();
             rc.propValue = null;
-            System.out.println("802: DataTree -headerType" + header.getType());
+           // System.out.println("802: DataTree -headerType" + header.getType());
             rc.err = 0;
             if (rc.zxid > lastProcessedZxid) {
                 lastProcessedZxid = rc.zxid;
@@ -830,20 +876,17 @@ public class DataTree {
                     SetDataTxn setDataTxn = (SetDataTxn) txn;
                     debug = "Set data for  transaction for "
                             + setDataTxn.getPath();
-                    System.out.println("828: DataTree- Setdata:" + debug);
+                   // System.out.println("828: DataTree- Setdata:" + debug);
                     rc.stat = setData(setDataTxn.getPath(), setDataTxn
                             .getData(), setDataTxn.getVersion(), header
                             .getZxid(), header.getTime());
                     break;
                 case OpCode.proposeData:
-                	/*if(txn == null) {
-                    	System.out.println("794:DataTree");
-                    	return null;
-                    }*/
+                	
                     SetDataTxn proposeDataTxn = (SetDataTxn) txn;
                     debug = "Propose data for  transaction for "
                             + proposeDataTxn.getPath();
-                    System.out.println("837: DataTree- Proposedata:" + debug);
+                    //System.out.println("837: DataTree- Proposedata:" + debug);
                     //proposedValue = proposeData(proposeDataTxn.getPath(), rc.stat, null, proposeDataTxn
                     rc.propValue = proposeData(proposeDataTxn.getPath(), rc.stat, null, proposeDataTxn        .getData(), proposeDataTxn.getVersion(), header
                             .getZxid(), header.getTime());

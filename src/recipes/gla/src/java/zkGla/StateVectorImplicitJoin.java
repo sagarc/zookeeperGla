@@ -1,14 +1,12 @@
 package zkGla;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
-import java.io.*;
+
+
 
 
 
@@ -18,16 +16,16 @@ import java.io.*;
 
 
 
-public class StateVectorImplicitJoin extends Gla implements java.io.Serializable {
+public class StateVectorImplicitJoin extends Gla {
 	
 	int totalProposer;
 	int myProposerId;		
 	int[] stateVector;
-	StateObject initialSO;
-	
-	public class StateObject implements java.io.Serializable{
-		int size;
-		int[] list;		
+	public StateObject initialSO;
+	 
+	public class StateObject{
+		public int size;
+		public int[] list;		
 	}
 		
 	public StateVectorImplicitJoin(String address, int totalProp, int myId){
@@ -43,47 +41,26 @@ public class StateVectorImplicitJoin extends Gla implements java.io.Serializable
 			initialSO.list[i] = 0;
 		}		
 	}
-	
-	private StateObject ByteToObj(byte[] oldByteValue){    	
-    	//ByteArrayInputStream bin = new ByteArrayInputStream(oldByteValue);
-    	//try {
-			//ObjectInputStream in = new ObjectInputStream(bin);
-			
-			//String stateString = in.readUTF();
-    		String stateString = new String(oldByteValue);    		
-			String[] stateTokens = stateString.split(":");
-			StateObject currObject = new StateObject();
-			currObject.size= Integer.parseInt(stateTokens[0]);
-			currObject.list=new int[currObject.size];
-			for(int i=1;i<=currObject.size;i++){
-				currObject.list[i-1] = Integer.parseInt(stateTokens[i]);
-			}
-			return currObject;				
-			
-		//} catch (IOException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-			//return null;
-		//}
-    } 
-	
-	private byte[] ObjToByte(StateObject stateObj){
-    	//ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    	//try {
-			//ObjectOutputStream out = new ObjectOutputStream(bos);
-			String stateString="";
-			stateString+=stateObj.size;
-			for(int i=0;i<stateObj.size;i++){
-				stateString+=":"+stateObj.list[i];	
-			}
-			return stateString.getBytes();
-			//out.writeChars(stateString);
-			//return bos.toByteArray();
-		//} catch (IOException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
-			//return null;
-		//}   	
+		
+	 private StateObject ByteToObj(byte[] oldByteValue){   
+		String stateString = new String(oldByteValue);    		
+		String[] stateTokens = stateString.split(":");
+		StateObject currObject = new StateObject();
+		currObject.size= Integer.parseInt(stateTokens[0]);
+		currObject.list=new int[currObject.size];
+		for(int i=1;i<=currObject.size;i++){
+			currObject.list[i-1] = Integer.parseInt(stateTokens[i]);
+		}
+		return currObject;
+	}
+	 
+	public byte[] ObjToByte(StateObject stateObj){
+		String stateString="";
+		stateString+=stateObj.size;
+		for(int i=0;i<stateObj.size;i++){
+			stateString+=":"+stateObj.list[i];	
+		}
+		return stateString.getBytes();			   	
     }
     
     //value to be proposed by using in memory stateVector
@@ -103,15 +80,7 @@ public class StateVectorImplicitJoin extends Gla implements java.io.Serializable
     }
 	
 	
-	private boolean CheckEquality(byte[] oldByteVal, byte[] newByteVal){
-    	StateObject oldVal = ByteToObj(oldByteVal);
-    	StateObject newVal = ByteToObj(newByteVal);
-    	if(oldVal==null || newVal==null) return false;
-    	for (int i =0;i<totalProposer;i++){
-    		if(oldVal.list[i] != newVal.list[i]) return false;    		
-    	}
-    	return true;
-    }
+	
     
     public String PrintValue(byte[] value){
     	StateObject sObj = ByteToObj(value);
@@ -125,55 +94,18 @@ public class StateVectorImplicitJoin extends Gla implements java.io.Serializable
     		output += sObj.list[i] + ", ";
     	output+= sObj.list[totalProposer-1] + "}";
     	return output;
-    }
-              
-    public byte[] JoinValue(byte[] oldByteValue, byte[] proposedByteValue){
-    	StateObject newValue = new StateObject();   	
-    	StateObject oldValue = ByteToObj(oldByteValue);
-    	StateObject proposedValue = ByteToObj(proposedByteValue);
-    	
-    	if(oldValue!=null && proposedValue!=null){
-	    	newValue.size = totalProposer;
-	    	newValue.list = new int[totalProposer];
-	    	for(int i=0;i<totalProposer;i++){
-	    		if(oldValue.list[i] < proposedValue.list[i]) newValue.list[i] = proposedValue.list[i];
-	    		else newValue.list[i] = oldValue.list[i];
-	    	}
-	    	return ObjToByte(newValue);
-    	}
-    	else return null;
-    }
+    }              
     
-    public void ProposeValue(byte[] proposedByteValue){    	
-    	    	
-    	byte[] oldByteValue;	            	
-    	Version oldVersion = new Version();    	
-    	int retryCount = 20;
-    	if(!TestCreateZnode(ObjToByte(initialSO), root)){
-			System.out.println("Error znode can't be initialised");
-			return;
+    
+    public void ProposeValue(byte[] proposedByteValue){    	    	
+    	byte[] newByteValue;		
+		newByteValue = ProposeData(proposedByteValue, -1, root);
+		if(newByteValue == null) {
+			System.out.println("Error in accepting proposed value");			
 		}
-    	
-    	while(retryCount>0)
-    	{    		
-    		oldByteValue = ReadValue(oldVersion, root);    			
-    		byte[] newByteValue;
-    		
-    		if(oldByteValue!=null){
-    			newByteValue = JoinValue(oldByteValue,proposedByteValue);
-    			if(CheckEquality(oldByteValue,newByteValue)) break;
-    		    
-    			if(SetValue(newByteValue, oldVersion.getVersion(), root)) {
-    				//System.out.println("Value set on try no: " + (11 -retryCount));
-    				break;
-    			}
-    		}
-        	retryCount--;        	
-        }
-    	if(retryCount == 0 ){
-    		System.out.println("Value couldn't be written");
-    	}          
-	              
+		else{
+			//System.out.println("P:" + PrintValue(newByteValue));
+		}
      }   
    
 	
@@ -196,8 +128,7 @@ public class StateVectorImplicitJoin extends Gla implements java.io.Serializable
     }     	
         
 	
-	public static void main(String args[]){
-    	System.out.println("Enter proposedValues, -1 to stop");
+	public static void main(String args[]){    	
     	BufferedReader br = new BufferedReader(new InputStreamReader(System.in));    	
     	if(args.length != 3) {
     		System.out.println("Usage: addressServer, totalNumProposers, myProposerId");
@@ -205,10 +136,17 @@ public class StateVectorImplicitJoin extends Gla implements java.io.Serializable
     	}    	
     	int totalProposer = Integer.parseInt(args[1]);
     	int myId = Integer.parseInt(args[2]);
-    	StateVector sVec = new StateVector(args[0], totalProposer, myId);
+    	StateVectorImplicitJoin sVec = new StateVectorImplicitJoin(args[0], totalProposer, myId);
     	
     	String inputCmd;
     	String[] inputArgs;
+    	System.out.println("Enter proposedValues, -1 to stop");
+    	
+    	if(!sVec.TestCreateZnode(sVec.ObjToByte(sVec.initialSO), root)){
+			System.out.println("Error znode can't be initialised");
+			return;
+		}
+    	
     	while(true){
 	    	try {
 	    		inputCmd = "";
@@ -221,9 +159,8 @@ public class StateVectorImplicitJoin extends Gla implements java.io.Serializable
 					System.out.println("	quit");
 					continue;
 				}
-				if(inputArgs[0].equalsIgnoreCase("readValue")){
-					Version version = new Version();
-		    		byte[] value = sVec.ReadValue(version, sVec.root);
+				if(inputArgs[0].equalsIgnoreCase("readValue")){					
+		    		byte[] value = sVec.ReadValue(Gla.root);
 		    		if(value!=null)System.out.println(sVec.PrintValue(value));
 		    		//System.out.println("Value is: " + value);
 		    	}
@@ -241,5 +178,11 @@ public class StateVectorImplicitJoin extends Gla implements java.io.Serializable
 			}    	
     	}    	
     }
+
+	@Override
+	public byte[] JoinValue(byte[] ov, byte[] nv) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

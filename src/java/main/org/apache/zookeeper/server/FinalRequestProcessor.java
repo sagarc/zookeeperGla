@@ -103,7 +103,7 @@ public class FinalRequestProcessor implements RequestProcessor {
             if (request.hdr != null) {
                TxnHeader hdr = request.hdr;
                Record txn = request.txn;
-               System.out.println("107 FinalRequestProcessor");
+               //System.out.println("107 FinalRequestProcessor");
                rc = zks.processTxn(hdr, txn);
             }
             // do not add non quorum packets to the queue.
@@ -256,7 +256,7 @@ public class FinalRequestProcessor implements RequestProcessor {
                   //      getDataRequest.getWatch() ? cnxn : null);
                 //if(proposedValue == null) System.out.println("259:FinalRequest - Empty proposedValue");
                 rsp = new GetDataResponse(rc.propValue, stat);
-                System.out.println("260 FinalRequest");
+                //System.out.println("260 FinalRequest");
                 break;
             }
             case OpCode.setWatches: {
@@ -366,8 +366,7 @@ public class FinalRequestProcessor implements RequestProcessor {
             .updateForResponse(request.cxid, lastZxid, lastOp,
                     request.createTime, System.currentTimeMillis());
 
-        try {
-        	System.out.println("371: FinalREquestPRocessor");
+        try {        	
             cnxn.sendResponse(hdr, rsp, "response");
             if (closeSession) {
                 cnxn.sendCloseSession();

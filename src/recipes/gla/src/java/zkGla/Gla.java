@@ -1,32 +1,20 @@
 package zkGla;
 
-
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.Version;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
 
-import zkGla.ILatticeValue.Version;
+import zkGla.ILatticeValue;
 
 
-
-
-abstract class Gla implements Watcher, ILatticeValue, java.io.Serializable {
+abstract class Gla implements Watcher, ILatticeValue {
 
     ZooKeeper zk = null;
     static Integer mutex;    
@@ -147,6 +135,34 @@ abstract class Gla implements Watcher, ILatticeValue, java.io.Serializable {
 	        return false;
 	    }
     	return false;
+    }
+    
+    public byte[] ProposeData(byte[] value, int oldVersion, String nodeName){
+    	if (zk != null) {
+	        try {   	
+	        	                
+	            Stat s = zk.exists(nodeName, false);
+	            if (s == null) {
+	                zk.create(nodeName, value, Ids.OPEN_ACL_UNSAFE,
+	                        CreateMode.PERSISTENT);
+	                return value;
+	            }
+	            else{	            	
+	            	Stat oldStat = s;
+	            	byte[] returnValue = null;    		            			                		                	
+                	returnValue = zk.proposeData(nodeName,value,oldVersion, null, oldStat);
+                	return returnValue;
+	            }                       
+	       } catch (KeeperException e) {
+	            System.out
+	                    .println("Keeper exception when instantiating gla: "
+	                            + e.toString());
+	        } catch (InterruptedException e) {
+	            System.out.println("Interrupted exception");
+	        }
+	        return null;
+	    }
+    	return null;
     }
         
     public boolean TestCreateZnode(byte[] initialValue, String nodeName){

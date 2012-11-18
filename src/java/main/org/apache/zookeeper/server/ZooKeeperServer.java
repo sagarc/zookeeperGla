@@ -711,7 +711,7 @@ public class ZooKeeperServer implements SessionExpirer, ServerStats.Provider {
     public ProcessTxnResult processTxn(TxnHeader hdr, Record txn) {
         ProcessTxnResult rc;
         int opCode = hdr.getType();
-        System.out.println("716: opcode" + opCode);
+       // System.out.println("716: opcode" + opCode);
         long sessionId = hdr.getClientId();
         rc = getZKDatabase().processTxn(hdr, txn);        
         if (opCode == OpCode.createSession) {

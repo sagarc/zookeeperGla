@@ -1026,8 +1026,7 @@ public class ZooKeeper {
      */
     public Stat setData(final String path, byte data[], int version)
         throws KeeperException, InterruptedException
-    {
-    	System.out.println("Setdata: 1030/Zookeeper");    	
+    {    	    	
     	final String clientPath = path;
         PathUtils.validatePath(clientPath);
 

@@ -1,8 +1,10 @@
 cd "../"
 #rm -r "build/recipes"
-cd "data/server"
-sudo rm -r "version-2"
-cd "../../"
+cd "data"
+sudo rm -r "server1/version-2"
+sudo rm -r "server2/version-2"
+sudo rm -r "server3/version-2"
+cd "../"
 
 rm -r "build"
 ant
