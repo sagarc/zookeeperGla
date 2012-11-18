@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" output=".eclipse/classes-main" path="src/java/main"/>
+	<classpathentry kind="src" output=".eclipse/classes-main" path="src/java/generated"/>
+	<classpathentry kind="src" output=".eclipse/classes-test" path="src/java/test"/>
+	<classpathentry kind="src" output=".eclipse/classes-test" path="src/java/systest"/>
+	<classpathentry kind="src" path="src/recipes/gla/src/java"/>
+	<classpathentry exported="true" kind="lib" path="/home/sagar/.ant/cache/log4j/log4j/jars/log4j-1.2.15.jar"/>
+	<classpathentry exported="true" kind="lib" path="/home/sagar/.ant/cache/jline/jline/jars/jline-0.9.94.jar"/>
+	<classpathentry kind="lib" path="/home/sagar/.ant/cache/junit/junit/jars/junit-4.8.1.jar"/>
+	<classpathentry kind="lib" path="/home/sagar/.ant/cache/checkstyle/checkstyle/jars/checkstyle-5.0.jar"/>
+	<classpathentry kind="output" path=".eclipse/classes-main"/>
+</classpath>

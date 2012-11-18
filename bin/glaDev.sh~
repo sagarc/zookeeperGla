@@ -1,0 +1,10 @@
+cd "../"
+#rm -r "build/recipes"
+rm -r "build"
+ant
+ant eclipse
+
+cd "./src/recipes"
+ant
+cd "../../bin"
+
