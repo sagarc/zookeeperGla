@@ -1,0 +1,781 @@
+\documentclass[11pt]{report}
+\usepackage{iitbtitle}
+\usepackage{a4wide}
+\usepackage{anysize}
+\usepackage{iitbcs}
+\usepackage{latexsym}
+\usepackage{amssymb}
+\usepackage{epsfig}
+\usepackage{epstopdf}
+\usepackage{geometry}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{tabls}
+%\usepackage[dvips]{color}
+\newif\ifpdf
+\ifx\pdfoutput\undefined
+   \pdffalse
+\else
+   \pdfoutput=1
+   \pdftrue
+\fi
+\ifpdf
+   \usepackage{graphicx}
+   \usepackage{epstopdf}
+   \DeclareGraphicsRule{.eps}{pdf}{.pdf}{`epstopdf #1}
+   \pdfcompresslevel=9
+\else
+   \usepackage{graphicx}
+\fi
+
+\marginsize{2.5cm}{2.5cm}{1cm}{1.5cm}
+\def\baselinestretch{1.15}   
+\newcommand\INPUT{\item[\textbf{Input:}]}
+\newcommand\OUTPUT{\item[\textbf{Output:}]}
+
+
+
+\begin{document}
+
+
+
+%\baselineskip 20pt
+%The definitions
+\def\title{Entity Relationship Queries on Web Data}
+\def\what{M. Tech. Project Stage I Report}
+\def\degree{Master~of~Technology}
+\def\who{Prashant S. Jaiswal}
+\def\roll{10305014}
+\def\guide{Prof. S. Sudarshan}
+
+\titlpage
+\def\bsq{\begin{flushright} $\blacksquare$\\ \end{flushright}}
+\def\tab{\hspace{5mm}}
+\newpage
+
+\begin{center}
+\textbf{ACKNOWLEDGEMENT}\\
+\end{center}
+
+\paragraph*{}
+I would like to express my sincere thanks to Prof. S. Sudarshan, for his invaluable help and guidance during the course of the project. 
+I am indebted to him for constantly encouraging me by giving his valuable suggestions on my work and helping me to build a clear understanding 
+on different aspects of the project topic. Working with him is always a great learning experience.
+\paragraph*{}
+I would like to thank Prof. Soumen Chakrabarti for allowing me to use his work and helping me to understand the same.
+I thank the supreme personality of Godhead for making me able to complete my project work. Lastly, I thank my parents for 
+their constant support and encouragement throughout the entire duration of the project.
+\\\\\\\\\\\\\\\\\\
+Prashant Jaiswal\\
+Date: 14-10-2011
+
+%The stuff
+\begin{abstract}
+ Successful web search engines in today's world allow the users to search for the information they need by entering the keywords and search engines then
+look for the most relevant documents which contain those keywords. But, quite often it does so happen that user is in search of real life entities like
+\textit{cricketers, nations}, etc. These are not just keywords but are entity types. So Entity Search has become the need of modern Internet world.
+
+User search may not be restricted to just single entities. Rather, users may query the web like ``\textit{Find those Pakistani singers who have sung a song in
+Indian film''}. Answering such queries is particularly difficult because the information is distributed across various documents and needs to be gathered
+efficiently to be practically usable.
+
+In this work, we focus on answering the Entity Relationship(ER) queries involving the relation predicate on the web scale entity search architecture. We discuss
+the challenges involved in running the ER queries involving relation predicates. We also develop and propose a system based on web scale entity search framework
+to answer ER queries with relation predicates. Lastly, we present some outputs based on the work whose execution time needs to be optimized in future work.
+
+Key challenges in this work are communication overhead for sending large data between master and slave in distributed architecture, 
+need of slave-slave communication and complexity of query resulting in high query execution time.
+\end{abstract}
+
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+\pagenumbering{arabic}
+
+\chapter{Introduction}             % chapter 1
+
+\paragraph*{}
+Web Search on the unstructured data has been the most popular way of information discovery in the last decade or two. User provides the \textit{set of keywords} to the 
+Web Search system like \cite{pagerank}, which finds the most relevant documents containing those keywords. Each document has some importance factor i.e. it's prestige, this along with the exactness of keyword match, user receives the most probable documents for quenching his thirst of information.
+
+\paragraph*{}
+As Web has evolved into the very rich information store, the page centric view of the Web has become a bit inconvenient to use. Many times the information that the
+user wants is spread across the multiple pages and he has to manually dig the Web to get the scattered information. Queries are quite often in the form of entities like
+\textit{professors} in IIT Bombay, \textit{prime ministers} of Independent India. Web search only gives us the documents containing the keywords we specify and getting 
+the list of such ``entities'' is not straight-forward. Such relationships are obtained by searching \textit{the professors} near IIT Bombay in the unstructured web pages. 
+Thus, the queries are also called ``near queries''. Thus, practical web scale entity search is a need which is a new area of research being explored in recent past. 
+
+\paragraph*{}
+Along with the single entity search, some queries are also such that they seek the multiple entities related to each other in some meaningful way. For e.g. \textit{Find all the IIT Bombay 
+professors which have studied in American Universities.} Here \textit{professors} and \textit{universities} are the two entity types such that \textit{professor} 
+should be from IIT Bombay and \textit{university} must be American and the same \textit{professor} must have ``studied'' in the \textit{university} being talked about. Finding such 
+relationship between the entities is not straightforward as the information is scattered across various pages and entities must be properly
+defined and tagged in the corpus. Other challenge is the noise in the web corpus along with the huge amount of information.
+
+\paragraph*{}
+The field of Entity Search is evolving and the recent work in this area include systems like Shallow Semantic Querying (SSQ) \cite{ssq}, WikiBANKSERQ \cite{wikibanks}, CSAW system \cite{csaw}. SSQ gives the 
+formal structure of the entity relationship query and we will be using the same structure to describe entity relationship queries. WikiBANKSERQ is an attempt to answer near 
+and entity-relation(ER) queries on the semi-structured data of Wikipedia by modeling the same as a graph and then doing the BANKS \cite{banks} style search on this disk-dumped graph. CSAW system is an attempt 
+to solve the entity search problem the Web-scale and system has large number of entities annotated in crawled web corpus. 
+
+\paragraph*{}
+In this work, we are trying to answer the ER queries using CSAW system which is a strong 
+system that can address large number of entities over million of documents and that can address many type of queries besides single entity search queries. We are trying
+to extend the algorithm for answering entity relationship queries in \cite{wikibanks} to answer ER queries on CSAW system. There are many challenges to this due to 
+distribution of web data across machines and complexity of operation.
+
+
+\paragraph*{}
+This report is organized as follows. Chapter 2 discusses the Structured querying of annotation-rich web text \cite{ssq}. It presents the types of entity-relationship
+queries and methods to answer them. In chapter 3, we describe the system WikiBANKSERQ \cite{wikibanks} which answers the entity relationship queries on Wikipedia 
+and supports about 0.3 million answer types. Chapter 4 describes the Web-scale Entity Relation Search Architecture proposed in \cite{csaw}. 
+
+In chapter 5, we describe our approach to answer the relation queries \cite{ssq} on a web scale architecture in \cite{csaw}. The chapter following it includes
+the experimental results and output of our work. Lastly we conclude and present the future scope for improving the approach that we are using for ER queries.
+
+
+%-----------------------------------------------------------------------------------end of chapter I
+\chapter{Structured Querying of Annotation-Rich Web Text}
+Consider the query like ``find all Bollywood actors who have acted in some Hollywood movie''. Such query requires collecting the results from different pages
+as the fact that a particular actor is from bollywood and movie is from Hollywood may be present in distinct pages as the fact that the same actor acted in the movie 
+being talked about. To address this situation, Xiaonan Li et. al. describe the entity based 
+retrieval using Shallow Semantic Query (SSQ) in \cite{ssq}.
+
+\section{SSQ Example}
+Consider a query: ``Find the companies and their founders, where the companies are in Silicon Valley
+and the founders are Stanford graduates''. This can be represented as:\\
+\begin{verbatim}
+SELECT x, y
+FROM ACTOR x, MOVIE y
+WHERE x:["Bollywood"]
+AND y:["Hollywood"]
+AND x,y:["act"]
+\end{verbatim}
+The query is called \textit{Shallow Semantic Query} which a quadruple $<V,D,P,U>$: where,\\
+-- $V$ is the set of entity variables $\{v_{1},...,v_{n}\}$.\\
+-- $D$ is the set of entity types $\{ d_{1},...,d_{n}\}$, where $d_{i}$ is the type of corresponding
+$v_{i} \in V$. \\
+-- $P$ is the set of conjunctive predicates. Each $p \in P$ is a pair $<V_{p}, C_{p}>$, where $V_{p} \subseteq V$
+and $C_{p}$ is a keyword based constraint associated with $V_{p}$.\\
+-- $U \subseteq V$ is the set of variables constituting the output tuple.\\
+
+For the query above, $V=U=\{x,y\}$, $D=\{ACTOR, MOVIE\}$, $P=\{p_{1}, p_{2}, p_{3}\}$, where
+$p_{1} = <\{x\},\{$``Bollywood``$\}>$ and so on. $p_{1}$ and $p_{2}$ are selection predicates, while
+$p_{3}$ is a relation predicate.
+
+\textit{SSQ Answer Tuple} is represented as $t=<e_{1}, e_{2},...,e_{|v_{i}|}>$ which is a tuple of entities, where each
+$e_{i}$ is an entity instantiated from variable $v_{i} \in V$ and belongs to $v_{i}'s\ type$ $d_{i} \in D$. Evidence
+is represented in the form of document and the sentence in which the evidence is found out. 
+
+\section{SSQ Ranking}
+This part describes the position based features those are derivable from the evidence.
+\subsection{Proximity}
+If the entities in $t_{p}$ and keywords in $C_{p}$ are more close to each other in an evidence $s \in \phi_{p}(t)$,
+they are likely to belong to the same grammatical unit of the corresponding sentence i.e. closer the keyword and 
+the entities to be searched, more is the association between them.
+\begin{equation}
+ prox_{p}(t,s)=prox_{p}(t_{p},s)=\frac{\Sigma_{e \in t_{p}} |token(e,s)| + \Sigma_{c \in C_{p}}|c|}{scope_{p}(|t_{p},s)|}
+\end{equation}
+\subsection{Ordering Pattern}
+It refers to the order of entities and the phrases in the evidence. Some patterns are more intuitive than the other. Different
+weights are assigned to different patterns such that strong patterns are weighted higher. For e.g. In the previous example,
+for predicate $p_{3}$, \textit{``Anil Kapoor acted in Slumdog Millionaire ... ''} is the most common ordering pattern,
+thus the pattern ``actor-entity followed by movie-entity'' is most obvious and weighted higher.
+\subsection{Mutual Exclusion}
+For a given predicate $p$, multiple evidences may occur in the same sentence each with the possibly different
+ordering pattern. This is called collision and at most, one of the patterns is effective. Each colliding pattern in the
+sentence is considered to be partially effective and patterns with higher credits are likely to be more effective than the
+patterns with the lower credits. Patterns followed by the more prominent entities are assumed to be more effective and each
+pattern is allocated the fraction of the credit of the sentence (which is 1). Entity is more prominent, if it is 
+involved in more number of evidences.
+\subsection{Predicate scoring} 
+All the features described above are used for predicate scoring.  Single predicate scoring is done using cumulative
+model (CM) as follows:
+\begin{equation}
+ F_{p}(t)= \sum_{o \in O_{p}}(f_{p}(o) \sum_{s \in \phi_{p}(t,o)} prox_{p}(t,s) credit_{p}(o,s))
+\end{equation}
+where $\phi_{p}(t,o) \subseteq \phi_{p}(t)$ be all evidences of $t$ for predicate $p$ that follow pattern $o \in O_{p}$.
+$f_{p}(o)$ is the weight of the pattern $o$; $prox_{p}(t,s)$ is $t_{p}$'s proximity in evidence $s$; 
+$credit_{p}(o,s)$ is the credit of $o$ in $s$.
+
+\section{Processing SSQ Queries}
+
+Given a SSQ query $q=<V,D,P>$, each predicate $p \in P$ is treated as a single-predicate query. Thus ,query is divided 
+into series of independent query retrieval for single predicate query $p$, plus additional processing to integrate
+their results.
+\subsection{Document Centric Retrieval(DCI)}
+DCI consists of two types of posting lists, Term-Doc posting list(TDPL) and Doc-Entity posting list(DEPL).
+TDPL is created for each term in corpus, listing all documents where it appears in the ascending order of document ID.
+DEPL is created for every entity type to be supported. It lists all documents containing entities of that types in 
+ascending order of document ID. DCI follows $term \rightarrow doc \rightarrow entity$ information flow in three
+dimension space of $\{term, doc, entity\}$. With these posting lists, we scan the two lists with a merge-join on $doc$.
+We first find that a particular document is join-able, then we temporarily stop the major join and start another merge-join of the two 
+entry lists associated with that particular document. This inner join returns the sentences as evidences in which
+entity and the term co-occur.
+
+\subsection{Retrieval with Entity-Centric Index(ECI)}
+To overcome the drawback of DCI (wasting of processing power for independent predicate evaluation), ECI is maintained which
+has the same number of posting lists as DCI, one for each term and one for each type. However, these posting lists are 
+ordered by entity ID rather than document ID. A term-entity posting list (TEPL) for term $w$ enlists all entities 
+co-occurring with $w$ in some sentence in ascending order. Each such entity has occurrence identifier and position.
+An Entity-Doc posting list (EDPL) for type $T$ enlists all entities of type T in ascending order and associates a complete 
+list of occurrence information with each entity. ECI follows $term \rightarrow entity \rightarrow doc$ information flow.
+In ECI, evaluating relation predicate is quite different because it does not require all posting lists to be joined on entity.
+Relation predicates are split into two selection predicates by a technique known as \textit{relation splitting}.
+Individual evidence lists is found out for the split single predicate queries and then the individual evidence lists are joined
+to get the final answer for the relation predicate query.\\
+
+%----------------------------------------------------------------------------------------------End of the chapter
+
+\chapter{Answering Entity Relationship Queries on Wikipedia: WikiBANSERQ}
+Novel approach of answering the Near and Entity Relationship queries on the Wikipedia has been described in \cite{wikibanks}.
+Wikipedia is a Web based, free-content encyclopedia project which provide information about various topics by public contribution.
+In Wikipedia, every document is about some entity and there are links to other entities in the documents. These links represent the
+relationship between the entities. Articles are also categorized according to the type of the information they possess.
+
+\section{Processing of Wikipedia}
+In Wikipedia, each article describes some entity. A graph is created from Wikipedia data in which nodes represent the Wikipedia articles or entities
+and the edges between the nodes represent the hyper-links between the articles. With each such link, the offset information from the start of the document
+is also stored.
+
+Wikipedia data is categorized and these categories are the useful feature of Wikipedia by which one can know the subject matter which is being represented by
+the articles. Categories have the sub-categories such that categories form a graph and this can be preprocessed for relevance ranking. These categories constitute
+the category nodes and category page may have link to other category pages which is processed as before. An entity page has the link to one or more category pages
+which indicates that the entity belongs to that category. This information is also stored to know the category of each entity.
+
+\section{Indexing Wikipedia pages}
+Wikipedia data is indexed using a Java Library called Lucene. Complete text of the Wikipedia pages is indexed and title is also indexed. For each Wikipedia
+page, Lucene document is created containing the fields NodeId, Title and the Content.
+
+\section{Query Model for Selection Queries}
+Selection Queries i.e. queries to find the entity which is related to near keyword are modeled in the form of Near queries described in \cite{sahoo}.
+\subsubsection*{Near queries:}
+A near query q is a two-tuple $\langle$C,K$\rangle$:
+\begin{center}
+ C \textbf{\textit{near}} (K)
+\end{center}
+\begin{itemize}
+ \item C is a keyword specifying the target entity type for the answer or the target category for Wikipedia.
+ \item K is a set of phrases such that each phrase may contain one or more keywords.
+\end{itemize}
+\textbf{Example:} Consider a user searching for the list of politicians from Congress party which have been Indian Prime Minister. The \textbf{near query} formulation of this query will be:
+\begin{center}
+ Politicians near (Congress ``Prime Minister'')
+\end{center}
+Here the keyword \textit{Politicians} gives the type information C, and the set K is equal to \{Congress, Prime Minister\} is the set of phrases near which 
+Politicians are to be found.\\\\
+Following are the terminologies in Near Queries.
+\begin{itemize}
+ \item findKeyword: Keyword C before the meta-word \textit{near} denotes the target entity type.
+ \item nearKeywordList: The set of keywords following the meta-word \textit{near}. Each keyword is separated by space within the parenthesis. Keywords within quotes are considered as phrases and as a result, single keywords.
+ \item nearKeywordOriginSet: The document pages that contain the keywords in the \textit{nearKeywordList}.
+ \item relevanceCategorySet: The set of categories that define the target type specified in the \textit{findKeyword}.
+\end{itemize}
+The Answer to the query is a single node which should be relevant to the category and related to the near keywords specified in the query.
+Category relevance and the near keywords distance from the entities primarily decide the ranking of the answers.
+
+\section{Evaluating Selection Predicates}
+Entity relationship queries may consist both selection predicates and relation predicates. Selection predicates correspond to the Near Queries in WikiBANKSERQ.
+Relation predicates specify the relationship between two or more entities in terms of keyword. In \cite{wikibanks}, Queries involving only selection predicates
+are answered as follows.
+\begin{itemize}
+ \item Lucene index is used to find categories containing the keywords in \textit{CategoryKeywordList}. This set is called \textit{RelevantCategorySet}.
+ \item Lucene index is the accessed to find the nodes containing the keywords in the \textit{NearKeywordList} and the resulting set is called as \textit{nearKeywordOrigionSet}.
+ \item Initial activation score for each document in \textit{nearKeywordOrigionSet} is calculated based on \textit{Node Prestige} and \textit{Lucene Score}.
+ \item Entities near those keywords are found by traversing the out-links from the nodes in the \textit{nearKeywordOriginSet}. This is possible as the graph is available
+in disk dump format and thus, can be quickly accessed.
+ \item Activation is spread to the neighbor nodes based on proximity of the out-link and near keywords i.e. how close the link offset is from the near keyword offset.
+ \item Neighbor node is selected as answer if it belongs to some category in \textit{RelevantCategorySet}. It's activation score is used for ranking.
+ \item Calculate the relevance score of the answer nodes which gives how perfect match is the node to the answer type specified in the query.
+ \item Calculate the total score after combining the \textit{activation score} and \textit{relevance score} for each answer found.
+\end{itemize}
+
+\section{Scoring Model}
+This section describes how the answers are scored after they are retrieved from Wikipedia dataset.
+\subsubsection*{Activation Spreading from Initial Lucene Hits:}
+The concept of activation spreading was introduced in \cite{kacholia} and it is somewhat similar to PageRank with decay. It is basically a prioritizing mechanism that
+gives higher importance to the neighbors those are more relevant to the near keyword set.
+ 
+Lucene gives those documents containing near keywords and it also returns the score called \textit{LuceneScore} of the documents that are obtained during near keywords
+search. \textit{NodePrestige} is another measure which tells how important the document is. It is precomputed from the number of the in-links of the
+node. If the document has been referenced by many other documents, it is assumed to be more important. These two scores are combined using the factor $\lambda$. Combination
+can be multiplicative or additive. Multiplicative combination looks like
+\begin{equation}
+ InitialActivation = [LuceneScore ^ \lambda] * [NodePrestige ^ {(1 - \lambda)}]
+\end{equation}
+
+\subsubsection*{Proximity:}
+It is quite natural that if the near keyword and the entity to be found are close to each other in the document or in other way, belong to a same grammatical
+unit or a sentence, that answer is probably more accurate and it's proximity is high. Position offset of each term in the document is already stored in the Lucene
+index and thus, can be obtained. Token offset of each link is already stored in the graph during pre-processing. Thus, token-distance between near keyword and link
+can be calculated. Higher activation is spread to the neighbor from the Lucene hit pages if the proximity is high and vice-versa.
+
+The function which maps the keyword-link distance to the proximity is such that as the token distance increases, proximity decreases and if the token distance is
+less, the proximity is high.
+
+\subsubsection*{Category Relevance:}
+The answer to be obtained must belong to the same category or answer type as specified in the near query. In this system, the categories are separately
+indexed and searched to find out the \textit{RelevanceCategorySet}. The categories associated with the neighbors of the nearKeywordOriginSet are found and if any of 
+these categories are found in \textit{RelevanceCategorySet}, the maximum of corresponding Lucene scores is returned (which is obtained while searching for the 
+relevant categories).
+
+Activation score and the Category Relevance scores are combined to get the total score of the answer nodes. Additive combination looks like:
+\begin{center}
+ Combined Score = $Activation Score * \eta$ + $RelevanceScore * (1-\eta)$
+\end{center}
+The parameter $\eta$ gives the weight to each component of the combined score. $\eta$ is tuned to get the optimal results. 
+
+\section{Evaluating Relation Predicates}
+  Often, user wants the information involving some relationship between more than one entities and not just single entity.
+For e.g. Find companies and their founders, where the companies are in Silicon Valley and founders are Stanford graduates.
+The corresponding entity relationship query will be
+\begin{verbatim}
+Find person(x) near (Stanford graduate) and 
+company(y) near ("Silicon Valley")
+such that x,y near ("founder")
+\end{verbatim}
+It is difficult to precompute and store all such relationships in the structured format as such relationships are
+potentially infinite. This work has adopted the query model used by SSQ \cite{ssq}. Selection predicates are evaluated
+as above. The algorithm for evaluating SSQ queries involving relation predicates given in \cite{wikibanks} is as follows. 
+\begin{itemize}
+ \item Pages containing the reference to any entity in the selection predicate answer list are found out by looking at the
+inlinks of the answer entities of the selection predicates.
+ \item These lists are intersected to find the list of pages containing links to at least one entity from the selection predicate
+answer list for each entity variable.
+ \item Using Lucene index, all such pages are found which contain the relation keyword.
+ \item Lucene index hits are intersected with the previously intersected list to find such pages containing the references to all the entities
+and also containing relation keywords.
+ \item For each page in this list:
+    \begin{itemize}
+      \item Perform Band Merge of the entity lists for each entity variable present in this page to get the answer tuples. 
+      \item Note the offsets of the keywords and the entity links for score computation. 
+    \end{itemize}
+\end{itemize}
+  After the algorithm run is over, the system generates the answers. For the example query used here, the answers are such as
+\begin{verbatim}
+x,y: <(Bill_Gates, Microsoft), 0.9896>, <(David_Filo, Yahoo!), 0.9745>, 
+<(Vinod_Khosla, Sun_Microsystems), 0.9257> ...
+\end{verbatim}
+\subsubsection*{Scoring Relation Predicate Answers:}
+For each relation predicate answer, the single predicate results are scored separately. Single predicate answers are merged and during
+this merging process, aggregate score for each answer tuple is calculated by taking product of the single predicate scores. 
+While scoring a relation predicate answers, selection predicate answers are scored using activation score and category relevance score. 
+
+For a relation predicate answer tuple $\langle e_1, e_2,..., e_n\rangle$, and the set of occurrences $O$ of the entities
+in the answer tuple and the relation keyword appearing together in the text. Score for the relation predicate $p$
+is calculated as follows:
+\begin{equation}
+ Score_p(\langle e_1, e_2,..., e_n \rangle)) = \sum_{o \in O} exp[\frac{-(TokenSpan(o))^2}{2\sigma^2}]
+\end{equation}
+
+Finally, single predicate answers are used to calculate aggregate score of the answer tuples. 
+\begin{equation}
+ Aggregate Score = \prod_{p \in selection\ predicates} Score_p * \prod_{p \in relation\ predicates} Score_p^{\gamma}
+\end{equation}
+Here, $\gamma$ is the factor which controls the selection and relation predicates score effects in the final answer score.
+
+%--------------------------------------------------------------------- End of the chapter
+\chapter{Web Scale Entity-Relation Search Architecture}
+Entity search at web scale is a challenging problem and it includes issues like index design, answers quality, web corpus annotation.
+Chakrabarti et. al. \cite{csaw} propose a system called CSAW (Curating and Searching the Annotated Web) to address this problem.
+Hereafter, we refer to this ``Web Scale Entity Search system'' as CSAW system and we explain the part of the
+system relevant to our work.
+\section{Annotating the Corpus:}
+About 500 millions of the web documents were crawled and entity occurrences and types in the corpus are annotated. Basically, annotation tries
+to link the huge information in the web to the Wikipedia entities. Annotation is high precision, low recall and restricted to few types. 
+
+\section{Query Language:}
+The System uses strong query language which can address many types of queries, selection query is just one of the types of the queries that
+CSAW supports. A variable can be bound to a particular type, for e.g. entities $e$ of type $T$ can be bound to a variable such that
+$x \in Player$. Entities and Keywords along with ordering pattern defines a \textit{ContextQuery}. E.g. The query ``\textit{Find all cricket players
+who play for Mumbai}'' can be written as \\ Unordered(20; t $\in^+$ Type:``Cricket Player", play, +City: Mumbai).
+
+Query is in the form of an abstract syntax tree (AST) whose root is RootQuery and it may have one or more contexts. Each RootQuery can currently have
+at most one TypeBindingQuery which corresponds to the variable bound to the answer type like ``Cricket Player''. TokenLiteralQueries are used for terms like ``play'' and 
+EntityLiteralQueries take care of entities in the CSAW query like ``Mumbai''. Our example query is translated as shown in the figure \ref{fig:qtrans}.
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=.3]{./entitysearch.pdf}
+\caption{ Query Translation for a CSAW \cite{csaw} query }
+\label{fig:qtrans}
+\end{figure}
+
+\section{The SIP Index:}
+Each document block in the SIP (\textbf{I}nterleaving of \textbf{S}nippets in the \textbf{P}osting lists) Index contains:
+\begin{enumerate}
+ \item Gap gamma coded document ID. Gap is difference between previous and this document ID.
+ \item No. of occurrences of the entity in the document.
+ \item Sequence of intervals in the order of non decreasing left end points of them. In addition to this, for each interval $(l,r)$, left endpoint $l$ of interval is
+gap gamma coded with left endpoint of the previous interval and right endpoint $r$ is gap gamma coded with respect to $l$.
+\end{enumerate}
+
+\section{Inlining Vs Dictionary-based approach:}
+Long entity IDs which uniquely identify the entities globally in the catalog are used at all the occurrences of the same entity 
+in the \textit{Inlining approach}. This makes document blocks longer in size.
+
+Repeated occurrences of the long entity IDs can be avoided by maintaining the \textit{local entity dictionary} at each document block in the 
+SIP type posting lists. The entity dictionary is the list of long entity IDs in the decreasing order of occurrence frequencies in that document. Short document IDs
+starting from 0, denote the relative position of the long entity ID in the dictionary. Short entity IDs are gamma coded and inlined which saves approximately
+40 percent of the disk space.
+
+\section{Query Processing:}
+Posting Lists corresponding to each answer types, terms and entities in the Syntax tree are traversed in a Document at a time (DAAT) manner and when the document present
+in all the posting lists is reached, all leaf nodes in the tree are decorated with the set of witnesses. Thus, TypeBindingQuery has corresponding
+TypeBindingWitnesses and so on. Internal nodes of the AST merge the spans from the witnesses. If the merged span lies within the \textit{span} specified by the query, the 
+witness is percolated up the AST and at root, we receive the complete answer for the query with the span. Using the information in the witness, feature
+vector can be created directly.
+%--------------------------------------------------------------------- End of the chapter
+\chapter{Answering Relation Predicate Queries on CSAW}
+CSAW system \cite{csaw} answers many type of queries using a strong query language in which one can include \textit{terms}, \textit{entities}, 
+\textit{both ordered and unordered windows} for finding out entities of particular entity-type. Selection queries are just a part of many types of
+queries that the system supports.
+But, currently it does not answer the relation queries presented in \cite{ssq}.
+Relation predicate typically involves finding out the relationship between different entities. This needs the information present
+in various pages to be collected. This is challenging as the documents are partitioned in the system \cite{csaw} to multiple different machines on the basis of 
+document IDs.
+\section{Challenges:}
+There are some challenges to be addressed to enable CSAW system answer SSQ queries involving relation predicates. Firstly, CSAW system does not support 
+queries involving more than one type-binding queries. Thus, It does not support the entity relationship queries involving relation predicates (involving relationship 
+between two or more entities). In WikiBANKSERQ, there is an in-memory graph of all wikipedia entities. It contained the information about
+which entities refer to the each entity and which entities the entity in question is referring to. Thus, calculating inlinks was straightforward.
+Unfortunately, for CSAW system, we cannot have such kind of graph in memory, nor we can have any such precomputed information because it would not fit into memory.
+But, CSAW system has posting lists not only for the terms, but also for entities and even for answer types. This is to say, for each entity, we can have  all of it's
+occurrences by traversing posting lists and for each entity-type, we can have all the entities and their occurrences by traversing posting lists. For e.g for
+entity type \textit{cities}, we can access all the occurrences of all the cities in the corpus. This hugely facilitates answering relation queries.
+\paragraph*{}
+One more problem is that we cannot directly find the so called inlinks of the selection predicate answer entities using
+the various types of posting lists that CSAW system provides, because each entity can be at potentially many slaves and we have to combine the results at each slave to get
+complete WikiBANKSERQ \cite{wikibanks} fashion inlinks. For e.g., Consider the case where we have selection predicate ``\textit{Cricketers} near India'' and it 
+produces set of answer entities S=\{R Dravid, S Tendulkar, S Ganguly\}. Suppose \{R Dravid\} is found at slave 1 and \{S Tendulkar, S Ganguly\} are found at slave 2.
+To find all occurrences of set S, i.e. inlinks, there is a problem. Although if there are occurrences of ``S Tendulkar'' at Slave 1 which are not \textit{near India},
+we cannot retain those as inlinks of set S because slave 1 does not know the presence of ``S Tendulkar'' in set S. Similarly, Slave 2 cannot retain occurrences 
+of ``R Dravid'' as ``R Dravid'' is basically found as selection predicate answer only at slave 1.
+
+In addition, we will have to aggregate the results at each slave in proper manner to reduce the master slave communication overhead.
+
+\section{Our Approach:}
+We basically try to answer the relation queries in the same way as in \cite{wikibanks}. In \cite{wikibanks}, there is precomputed graph residing in memory using which
+individual entity inlinks can be traversed to find all the pages which referred that entity. Same inlinks can be found in CSAW system in a little complicated way by using
+posting lists of the answer types. Our approach is relatively simple, if documents had not been partitioned over different machines. The procedure for the system
+where data is not partitioned is as follows:
+\begin{itemize}
+ \item Run the individual selection queries $S_i$ and get the answer entities in the corresponding sets $H_i$.
+ \item For each selection query $S_i$, there is an answer-type associated with it. Run a query to find all the entities corresponding to the answer-type such that
+  the entity must be present in the corresponding set $H_i$ for the selection query $S_i$. This is possible as CSAW system provides the posting lists for 
+the entity types using which we can get all entities belonging to particular entity-type and their occurrences as well.
+ \item This process gives all the entities with all the occurrences for the entities which are present in $H_i$. Thus, it is equivalent to finding
+  the inlinks of the entities in \cite{wikibanks}.
+ \item Find all the witnesses of the relation keyword query and merge the witnesses of the relation keyword query with inlinks or ``all occurrences of the entities'' for both selection queries as computed above to get 
+the pairs of entities (for a single relation predicate query) which co-occur in a document.
+ \item For each document, where all entities and the relation keyword co-occur, check all witnesses such that entities and the relation keywords co-occur
+  within the \textit{span} specified in the SSQ.
+\end{itemize}
+\subsubsection*{Limitation of the approach:}
+This approach cannot be directly extended to multiple slaves-single master environment of CSAW system. Because, for each selection query, ``running a query to find all 
+the entities corresponding to the answer-type such that the entity must be present as an answer for the relevant selection query'' will only give us the results local to 
+the slave. For e.g., one of the pages containing the reference to the particular entity may be present at different slave and suppose if that slave does not have the same 
+entity as an answer to the related selection query, then it is not possible to track this inlink of the entity. Similarly, the particular slave may be having a page referencing
+the entity of the answer-type, but the same entity may not be present as a local answer to the selection query. So, we modify the approach as below.
+
+\subsubsection*{Steps for Answering Queries on CSAW system:}
+\begin{itemize}
+ \item Master sends the Relation Query to each slave. Slaves run the individual selection queries and get the answer entities in the corresponding hashsets.
+ Slaves also send the entity set for each selection query to the master.
+ \item Master aggregates the entity sets received from each slave and sends the combined set to all slaves again. Thus, slaves have the complete entity sets for each selection query. 
+ \item Slaves then run Type-binding queries for answer-types in all selection queries and collects those witnesses for which entity-ids are present in corresponding 
+received set for that selection query from the master. This corresponds to inlinks of the entities. Slaves then run Token-literal query for the relation keyword and 
+collect the witnesses.
+ \item Slaves merge the Type-binding witnesses for all answer types and the Token-literal witnesses and collect the witnesses for which all entities and relation keyword lie within
+the \textit{span} of the query. Slaves partially aggregate the results and send it to the master. Master receives the answers from each slave and aggregates the answers again, ranks and outputs them. 
+\end{itemize}
+
+
+\begin{algorithm}
+ \caption{Slave Relation Query Processing Algorithm}
+ \begin{algorithmic}[1]
+\INPUT Relation Query $R_q$ in the form of parameters: entity types, near and relation keywords and span
+\OUTPUT Partial Set of Answer objects containing Entity Ids and it's count of occurrence
+\STATE $rcvdQuery \Leftarrow$ Receive the query object from the master
+\FORALL{selection predicates $i$ in the $R_q$}
+  \STATE Run the Selection query in the received $R_q$ 
+  \STATE $selectQueryHashSet[i] \Leftarrow$ ResultSet for the Selection query.
+  \STATE Send all the answer entities in the hashset $selectQueryHashSet[i]$ to the master
+  \STATE $selectQueryHashSet[i] \Leftarrow$ Receive the combined hashset of entities from the master
+\ENDFOR
+\STATE Traverse the posting lists of the answer types of the selection predicates and the relation keyword simultaneously for merging
+\WHILE {None of the posting lists reaches the end}
+\IF{A document $docId$ is reached in all the posting lists}
+  \FORALL{Type-Binding Queries $i$}
+  \STATE $typeBindingQuery[i].witnesses \Leftarrow$ Those witnesses of entity type $i$ in $docId$ whose entity is present in $selectQueryHashSet[i]$
+    \IF{$typeBindingQuery[i].witnesses$ is Empty}
+      \STATE continue \{$while-loop$\}
+    \ENDIF
+  \ENDFOR
+  \STATE $tokenLiteralQuery.witnesses \Leftarrow$ All the witnesses of relationKeyword/s present in $docId$
+  \STATE Merge all the witnesses arraylists such that both entity type witnesses and relation keyword witnesses lie within the $span$ of the query
+  \IF{such $answer$ is found}
+     \STATE $relationQueryAnswers \Leftarrow$ $answer$
+  \ENDIF
+\ENDIF
+\ENDWHILE
+\STATE Send $relationQueryAnswers$ to the master
+ \end{algorithmic}
+\end{algorithm}
+
+
+
+\begin{algorithm}
+ \caption{Master Relation Query Processing Algorithm}
+ \begin{algorithmic}[1]
+\INPUT Relation Query ($R_q$) in the form of parameters: entity types, near and relation keywords and span
+\OUTPUT Complete Set of Answer objects containing Entity Ids and it's count of occurrence
+\STATE $completeHash$, $totalAnswers$ = $\phi$
+\STATE $rcvdQuery \Leftarrow$ Receive the query object from the user
+\STATE Create a new thread for each slave and pass it the $slaveIP$ to connect.
+\FORALL{threads}
+\STATE Connect to $slaveIP$ and pass it the $rcvdQuery$
+\FORALL{selection predicates in the $R_q$}
+  \STATE $rcvdHashSet \Leftarrow$ Receive answer entity set for the selection query
+  \STATE synchronized $completeHash$ = $completeHash$ $\cup$ $rcvdHashset$
+  \STATE await()\verb+                    // wait till all threads reach here+
+  \STATE send $completeHash$ to $slaveIP$
+  \STATE $rcvdHashSet$, $completeHash \Leftarrow \phi$ 
+\ENDFOR
+\STATE $relQueryAnswers \Leftarrow$ Receive partially aggregated answers from $slaveIP$
+\STATE synchronized $totalAnswers$ = $totalAnswers$ $\cup$ $rcvdSecondHashset$
+\ENDFOR
+\STATE await()\verb+                      // wait till all threads execute completely+
+\STATE $totalAnswers \Leftarrow$ Aggregate the received answers
+%\IF{more relation predicates}
+%  \STATE Repeat the procedure for all relation predicates in the SSQ
+%  \STATE Merge and aggregate the results for all relation predicates
+%\ENDIF
+ \end{algorithmic}
+\end{algorithm}
+\section{Other Issues:}
+\subsection{Communication between master and slaves:}
+We have communicated the data between master and slave using \emph{Serialized Objects} in Java. Using serialized objects
+is simple as opposed to, for e.g., sending individual answers. Because if we do send answers individually, we also need to send
+the master the number of answers to be received. 
+
+Choice of serialized objects is because of the simplicity of our data transmission need. It need not be highly secure as it's not the web traffic.
+
+\subsection{Partial and Global Aggregation:}
+Answers need to be aggregated at some point as we don't want the duplicate answers. Multiple occurrences of same answer should increase the score 
+of the answer. We do partial aggregation of the answers at the slaves so as to reduce the communication overhead. Partially aggregated answers
+are received from all the slaves and are aggregated at the master. We call this as \textit{Global Aggregation}.
+
+To aggregate the answers, we maintain a hashmap having string as a key and answer object as a value. We convert the long entity ids in the answer
+into the strings and concatenate these strings to form the key of the hashmap. Each answer has \textit{numberOfTimes} field which gives it's count of
+occurrence and it is incremented after finding each new same answer.
+
+\subsection{Ranking the answers:}
+There are many parameters based on which answers are ranked currently. While selection predicates are evaluated, the span in which entity and near keywords
+co-occur is taken into account. Lower the span, higher is the score of the entity. No. of occurrences of an entity is also taken into account.
+
+Similarly, for scoring relation predicates, lower the span in which the pair of entities and relation keywords occur, higher is the score and vice-versa. 
+The number of answers involving particular pair of entities is the obvious scoring parameter and scores are cumulatively added to the entity pair during 
+both partial and global aggregation. Besides this, each entity has its own importance level and to introduce effect of this, we use the \textit{node prestige}
+from \cite{wikibanks}. Node prestige is calculated from the number of inlinks of the entity in Wikipedia. Higher the entity is referenced, more important it is!
+We suitably combine all these parameters after tuning their weights properly. More details are in \cite{zibran}.
+\subsection{Finding top-$k$ answers:}
+The number of answers for an average query can be huge at web scale, we should be able to report top-$k$ answers efficiently without having to sort
+all the answers. Currently, we have used simple ranking techniques and we plan to address this issue in future work.
+
+\subsection{Queries involving multiple relation predicates:}
+For those queries involving multiple relation predicates, each relation predicate is evaluated and answers are aggregated separately. 
+Lists of answers for individual relation predicates are then equi-joined based on common variables in relation predicates. Results are then aggregated
+and scored accordingly depending on individual scores. 
+
+
+%--------------------------------------------------------End of the chapter -------------------------------------------
+
+\chapter{Experimental Results}
+
+\section{Query Set}
+Sample queries for experiments are enlisted in the table \ref{tab:english}. Some of them are taken from \cite{ssq}.
+SSQ version of the  queries is shown in table \ref{tab:ssq}.
+\begin{table}[htbp]
+\begin{center}
+\caption{English Plain-text Queries}
+\label{tab:english}
+\begin{tabular}{|l|l|}
+\hline
+\multirow{2}{*}{Q1} & Find actors and films. The actors must be from Bollywood and movies must be \\
+ & from Hollywood\\
+\hline
+\multirow{2}{*}{Q2} & Find companies and their founders. The company must be in Silicon Valley  \\
+ & and founders are Stanford University graduates \\
+\hline
+\multirow{2}{*}{Q3} & Find Nobel Prize winners and Big ten universities. The winners held   \\
+ & professorship in the universities \\
+\hline
+ Q4 & Find NBA champion teams and their leading players who won the NBA final MVP   \\
+\hline
+ Q5 & Find American persons who have won a Nobel Prize in chemistry   \\
+\hline
+ Q6 & Find Airports in Germany which are located in cities near Frankfurt   \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\section{Results}
+Partially aggregated answers at each slave for all the queries as well as the totally aggregated answers at the master
+are shown in table \ref{tab:answer}. Columns S1, S2... stand for slave 1, slave 2 etc.
+
+Total execution time of the queries is shown in table \ref{tab:time}. The data shows the variance in the execution time.
+Typically, when sizes of posting lists traversed are large, the execution time of the query increases substantially.
+
+Table \ref{tab:time} shows the average posting list entries for all the entity-types present in the query. Sum of the posting lists entries at all slaves
+for each entity type in the query is taken and then average number of posting lists entries is calculated for all the entity-types in the query.
+
+\begin{table}[htbp]
+ \begin{center}
+ \caption{Queries in the SSQ form}
+ \label{tab:ssq}
+\begin{tabular}{|l|l|}
+\hline
+\multirow{2}{*}{Q1} & SELECT x, y FROM ACTOR x, MOVIE y WHERE x:[``bollywood'']   \\
+ & AND y:[``hollywood''] AND x, y:[``act''] \\
+\hline
+\multirow{2}{*}{Q2} & SELECT x, y FROM PERSON x, COMPANY y WHERE x:[``Stanford Graduate'']   \\
+ & AND y:[``Silicon Valley''] AND x, y:[``founder''] \\
+\hline
+\multirow{2}{*}{Q3} & SELECT x, y FROM PERSON x, UNIVERSITY y WHERE x:[``Nobel Prize'']   \\
+ & AND y:[``Big Ten''] AND x, y:[``professor''] \\
+\hline
+\multirow{2}{*}{Q4} & SELECT x, y FROM CLUB x, PLAYER y WHERE x:[``nba champion'']   \\
+ & AND y:[``final mvp''] AND x, y:[``led''] \\
+\hline
+\multirow{2}{*}{Q5} & SELECT x, y FROM PERSON x, WINNER y WHERE x:[``american'']   \\
+ & AND y:[``Nobel Prize''] AND x, y:[``chemistry''] \\
+\hline
+\multirow{2}{*}{Q6} & SELECT x, y FROM AIRPORT x, CITY y WHERE x:[``Germany'']   \\
+ & AND y:[``frankfurt''] AND x, y:[``located''] \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}[htbp]
+ \begin{center}
+ \caption{Query Answers Statistics}
+  \label{tab:answer}
+\begin{tabular}{|l|l|l|l|l|l|l|l|l|l|l|l|}
+\hline
+  & S1 & S2 & S3 & S4 & S5 & S6 & S7 & S8 & S9 & S10 & Aggregate\\
+  \hline
+  \hline
+Q1  & 922 & 926 & 712 & 945 & 866 & 814 & 911 & 622 & 521 & 526 & 5128\\
+  \hline
+Q2  & 1138 & 1238 & 901 & 1226 & 1096 & 1137 & 1253 & 860 & 646 & 564 & 7391 \\
+  \hline
+Q3  & 19121 & 22008 & 14921 & 20612 & 19030 & 17508 & 22273 & 14970 & 7846 & 6807 & 104277\\
+  \hline
+Q4  & 97 & 98 & 87 & 131 & 102 & 114 & 123 & 80 & 68 & 77 & 464\\
+  \hline
+Q5  & 261 & 295 & 233 & 297 & 276 & 246 & 313 & 222 & 173 & 135 & 1651\\
+  \hline
+Q6  & 1141 & 1094 & 1091 & 1067 & 1051 & 1103 & 1015 & 1176 & 989 & 946 & 4564 \\
+  \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}[htbp]
+ \begin{center}
+ \caption{Total Execution Time}
+  \label{tab:time}
+\begin{tabular}{|l|c|}
+\hline
+  & Execution Time (seconds) \\
+  \hline
+Q1  & 14.725 \\
+  \hline
+Q2  & 41.92 \\
+  \hline
+Q3  & 44.808 \\
+  \hline
+Q4  & 14.896 \\
+  \hline
+Q5  & 161.095 \\
+  \hline
+Q6  & 12.954  \\
+  \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+
+
+\begin{table}[htbp]
+ \begin{center}
+ \caption{Effect of Posting List Sizes on Execution Time}
+  \label{tab:posting}
+\begin{tabular}{|l|c|c|}
+\hline
+    & Average Entity-Type posting  &  \multirow{2}{*}{Execution Time (seconds)} \\
+    & lists size (in Million Entries) & \\
+  \hline
+Q1  &  33.59 & 14.725 \\
+  \hline
+Q2  & 151 & 41.92 \\
+  \hline
+Q3  & 122.25 & 44.808 \\
+  \hline
+Q4  & 43.28 & 14.896 \\
+  \hline
+Q5  & 107.04 & 161.095 \\
+  \hline
+Q6  & 18.97 & 12.954  \\
+  \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{figure}[!htb]
+\centering
+\includegraphics[scale=.5]{./graph.pdf}
+\caption{ Effect of Posting List Sizes on Execution Time }
+\label{fig:graph}
+\end{figure}
+%--------------------------------------------------------------- End of chapter IV
+. 
+%-------------------------------------------- End of chapter VI
+\chapter{Conclusion and Future Work}
+\paragraph*{}
+In this report, we presented the problem of entity search and presented the earlier work and systems in this area.
+We proposed our approach to address the problem of answering the relation queries at Web-scale. This report also 
+described the experimental results based on the work.
+
+\paragraph*{}
+Entity search at Web scale is a hot research topic as it's importance and need is quite clear. The approach that
+we proposed for relation queries seems descent but there is huge room for improvement and work in it. The system
+currently takes quite more time than it should take to be usable. Entity Search systems are not replacement for systems
+like \cite{pagerank} but certainly are good alternatives when the obvious information need is in the form of entities.
+
+\paragraph*{}
+Generating top-$k$ answers at the master efficiently without sorting the answers is very important. Firstly, user will see the output as the
+answers are generated without having to wait till the sorting is complete. In addition, it may optimize the time required for processing the query as sorting
+is a costly operation.
+
+One of the optimizations could be reducing the amount of the data communicated between master and slaves. This can happen
+if we can rank the answers so that we are sure about the lower ranks of some answers or the number and quality of answers retrieved are
+already sufficiently satisfiable so that we would not like to send the other answers to the master. 
+
+Sometimes, user may poorly specify a answer type due to which answers may not be what exactly the user intended to receive. We can convert
+the user specified answer type in sufficiently higher level category in the category hierarchy so that good answers are retained.
+It would also be worthwhile to check if user puts a category $x$ and near keyword $y$, Is there a category for $x\_y$ or $y\_x$ ($x\ concatenate\ y$ or $y\ concatenate\ x$)? 
+If yes, then using that category must give more accurate results. For e.g if user searches for category $actor$ near $bollywood$, there may 
+already be a category for $bollywood\_actors$.
+
+
+
+
+\bibliographystyle{abbrv}
+\bibliography{seminar_prashant}
+
+\end{document}
