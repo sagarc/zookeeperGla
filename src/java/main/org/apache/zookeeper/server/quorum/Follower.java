@@ -103,17 +103,19 @@ public class Follower extends Learner{
      * @param qp
      * @throws IOException
      */
-    protected void processPacket(QuorumPacket qp) throws IOException{
+    protected void processPacket(QuorumPacket qp) throws IOException{    	
         switch (qp.getType()) {
-        case Leader.PING:            
+        case Leader.PING:        	
             ping(qp);            
             break;
-        case Leader.PROPOSAL:            
+        case Leader.PROPOSAL:
+        	LOG.info("Got proposal packet from leader");
             TxnHeader hdr = new TxnHeader();
             BinaryInputArchive ia = BinaryInputArchive
             .getArchive(new ByteArrayInputStream(qp.getData()));
             Record txn = SerializeUtils.deserializeTxn(ia, hdr);
             if (hdr.getZxid() != lastQueued + 1) {
+            	
                 LOG.warn("Got zxid 0x"
                         + Long.toHexString(hdr.getZxid())
                         + " expected 0x"
@@ -123,15 +125,19 @@ public class Follower extends Learner{
             fzk.logRequest(hdr, txn);
             break;
         case Leader.COMMIT:
+        	LOG.info("Got COMMIT packet from leader");
             fzk.commit(qp.getZxid());
             break;
         case Leader.UPTODATE:
+        	LOG.info("Got UPTODATE packet from leader");
             LOG.error("Received an UPTODATE message after Follower started");
             break;
         case Leader.REVALIDATE:
+        	LOG.info("Got REVALIDATE packet from leader");
             revalidate(qp);
             break;
         case Leader.SYNC:
+        	LOG.info("Got SYNC packet from leader");
             fzk.sync();
             break;
         }

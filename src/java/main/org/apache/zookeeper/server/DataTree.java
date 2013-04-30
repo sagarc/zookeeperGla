@@ -625,7 +625,7 @@ public class DataTree {
             return null;
         }
     }
-    
+  /*  
     public class StateObject{
 		int size;
 		int[] list;		
@@ -668,6 +668,7 @@ public class DataTree {
     	}
     	else return null;
     }   
+    */
     
     public byte[] proposeData(String path, Stat stat, Watcher watcher,
     			byte data[], int version, long zxid,
@@ -683,7 +684,7 @@ public class DataTree {
         byte joindata[]= null;
         synchronized (n) {
             lastdata = n.data;
-            joindata = JoinValue(lastdata, data);
+            joindata = StateObject.JoinValue(lastdata, data);
             n.data = joindata;
             n.stat.setMtime(time);
             n.stat.setMzxid(zxid);

@@ -59,6 +59,7 @@ public class LeaderZooKeeperServer extends QuorumZooKeeperServer {
     @Override
     protected void setupRequestProcessors() {
     	System.out.println("61:LeaderZooKeeperServer");
+    	LOG.info("Server id which is ssetting request processors is" + getServerId());
         RequestProcessor finalProcessor = new FinalRequestProcessor(this);
         RequestProcessor toBeAppliedProcessor = new Leader.ToBeAppliedRequestProcessor(
                 finalProcessor, getLeader().toBeApplied);

@@ -1,8 +1,9 @@
 tickTime=2000
-dataDir=/home/sagar/Downloads/zookeeper-3.3.5/data/server1
+dataDir=/home/sagar/zookeeperGla/data/server1
 clientPort=2191
 initLimit=5
 syncLimit=2
+isLeaderNeeded=false
 server.1=localhost:2988:3988
 server.2=localhost:2989:3989
 server.3=localhost:2990:3990

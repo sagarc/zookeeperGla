@@ -28,6 +28,7 @@ import org.apache.zookeeper.server.NIOServerCnxn;
 import org.apache.zookeeper.server.ZKDatabase;
 import org.apache.zookeeper.server.ZooKeeperServerMain;
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog;
+import org.apache.zookeeper.server.quorum.QuorumPeer.ServerState;
 import org.apache.zookeeper.server.quorum.QuorumPeerConfig.ConfigException;
 
 /**
@@ -128,7 +129,12 @@ public class QuorumPeerMain {
           quorumPeer.setTxnFactory(new FileTxnSnapLog(
                       new File(config.getDataLogDir()),
                       new File(config.getDataDir())));
-          quorumPeer.setQuorumPeers(config.getServers());
+          quorumPeer.setQuorumPeers(config.getServers());          
+          quorumPeer.setIsLeaderNeeded(config.getIsLeaderNeeded());
+          if(!config.isLeaderNeeded){
+        	  quorumPeer.setPeerState(ServerState.PEER);
+        	  LOG.info("Setting ServerState as Peer");
+          }
           quorumPeer.setElectionType(config.getElectionAlg());
           quorumPeer.setMyid(config.getServerId());
           quorumPeer.setTickTime(config.getTickTime());
@@ -140,6 +146,7 @@ public class QuorumPeerMain {
           quorumPeer.setCnxnFactory(cnxnFactory);
           quorumPeer.setZKDatabase(new ZKDatabase(quorumPeer.getTxnFactory()));
           quorumPeer.setLearnerType(config.getPeerType());
+          quorumPeer.initialNumberServers = config.getInitialNumberServers();
   
           quorumPeer.start();
           quorumPeer.join();

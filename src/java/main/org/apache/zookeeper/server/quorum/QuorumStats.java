@@ -27,6 +27,7 @@ public class QuorumStats {
         static public final String LEADING_STATE = "leading";
         static public final String FOLLOWING_STATE = "following";
         static public final String OBSERVING_STATE = "observing";
+        static public final String PEER_STATE = "peer";
         public String[] getQuorumPeers();
         public String getServerState();
     }

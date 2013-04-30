@@ -17,18 +17,23 @@
  */
 package org.apache.zookeeper.server.quorum;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.apache.log4j.Logger;
 import org.apache.zookeeper.jmx.MBeanRegistry;
@@ -37,6 +42,7 @@ import org.apache.zookeeper.server.NIOServerCnxn;
 import org.apache.zookeeper.server.ZKDatabase;
 import org.apache.zookeeper.server.ZooKeeperServer;
 import org.apache.zookeeper.server.persistence.FileTxnSnapLog;
+import org.apache.zookeeper.server.StateObject;
 import org.apache.zookeeper.server.quorum.flexible.QuorumMaj;
 import org.apache.zookeeper.server.quorum.flexible.QuorumVerifier;
 
@@ -50,6 +56,7 @@ import org.apache.zookeeper.server.quorum.flexible.QuorumVerifier;
  * transactions.</li>
  * <li>Leader - the server will process requests and forward them to followers.
  * A majority of followers must log the request before it can be accepted.
+ * <li> Peer - the server acts as peer 
  * </ol>
  *
  * This class will setup a datagram socket that will always respond with its
@@ -73,7 +80,17 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
     QuorumBean jmxQuorumBean;
     LocalPeerBean jmxLocalPeerBean;
     LeaderElectionBean jmxLeaderElectionBean;
-    QuorumCnxManager qcm;
+    public enum ServerState {
+	    LOOKING, FOLLOWING, LEADING, OBSERVING, PEER;
+	}
+
+	QuorumCnxManager qcm;
+	
+	//no of servers initialy
+	int initialNumberServers;
+	
+	//represents value of vector when it was last read
+	//public int[] currentLearntValue;
     
     /* ZKDatabase is a top level member of quorumpeer 
      * which will be used in all the zookeeperservers
@@ -96,7 +113,7 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
                 InetSocketAddress electionAddr) {
             this.id = id;
             this.addr = addr;
-            this.electionAddr = electionAddr;
+            this.electionAddr = electionAddr;            
         }
 
         public QuorumServer(long id, InetSocketAddress addr) {
@@ -122,10 +139,6 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
         public LearnerType type = LearnerType.PARTICIPANT;
     }
 
-    public enum ServerState {
-        LOOKING, FOLLOWING, LEADING, OBSERVING;
-    }
-    
     /*
      * A peer can either be participating, which implies that it is willing to
      * both vote in instances of consensus and to elect or become a Leader, or
@@ -186,6 +199,19 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
      * My id
      */
     private long myid;
+    
+    /*
+     * Id of proposer. This id increases for every new proposal
+     */
+    private long proposerId = 0;
+    
+    public long getProposerId(){ return proposerId;}
+    
+    public void incrementProposerId(){
+    	proposerId++;
+    }
+    
+    public PeerCommunication pc;
 
 
     /**
@@ -237,6 +263,11 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
      * an acknowledgment
      */
     protected int syncLimit;
+    
+    /*
+     * This is used for whether we want distributed or central based protocol
+     */
+    protected boolean isLeaderNeeded;
 
     /**
      * The current tick
@@ -279,10 +310,12 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
                         Vote current = getCurrentVote();
                         switch (getPeerState()) {
                         case LOOKING:
+                        	LOG.info("Eventhread looking");
                             responseBuffer.putLong(current.id);
                             responseBuffer.putLong(current.zxid);
                             break;
                         case LEADING:
+                        	LOG.info("Eventhread leading");
                             responseBuffer.putLong(myid);
                             try {
                                 long proposed;
@@ -296,6 +329,7 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
                             }
                             break;
                         case FOLLOWING:
+                        	LOG.info("Eventhread following");
                             responseBuffer.putLong(current.id);
                             try {
                                 responseBuffer.putLong(follower.getZxid());
@@ -308,7 +342,13 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
                             // Do nothing, Observers keep themselves to
                             // themselves. 
                             break;
+                        case PEER:
+                        	LOG.info("Eventhread peering");
+                        	//MIght need to ping other servers
+                        	break;
                         }
+                        
+                        	
                         packet.setData(b);
                         udpSocket.send(packet);
                     }
@@ -375,7 +415,7 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
             QuorumVerifier quorumConfig) throws IOException {
         this();
         this.cnxnFactory = cnxnFactory;
-        this.quorumPeers = quorumPeers;
+        this.quorumPeers = quorumPeers;        
         this.electionType = electionType;
         this.myid = myid;
         this.tickTime = tickTime;
@@ -395,14 +435,109 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
     @Override
     public synchronized void start() {
         try {
-            zkDb.loadDataBase();
+            zkDb.loadDataBase();           
         } catch(IOException ie) {
             LOG.fatal("Unable to load database on disk", ie);
             throw new RuntimeException("Unable to run quorum server ", ie);
         }
         cnxnFactory.start();        
-        startLeaderElection();
+        if(isLeaderNeeded){
+        	LOG.info("Leader election started");
+        	startLeaderElection();
+        }else{        
+        	startPeerConnections();
+        }
         super.start();
+    }
+    
+    void addProposals(byte[] proposalValue){    	
+    	pc.addProposal(proposalValue, getProposerId());
+    	incrementProposerId();
+    }
+    
+    /*
+     * this method with help of quorumCnxnManager should connect to all peers. the port used
+     * For connection is electionaddress. 
+     * Responder thread is not used here
+     */    
+    public void startPeerConnections(){
+    	//initialize the currentLearntValue to latest value read from underlying GLA
+    	
+    	
+    	//set the myQuorumAddr        
+    	for (QuorumServer p : getView().values()) {
+            if (p.id == myid) {
+                myQuorumAddr = p.addr;
+                break;
+            }
+        }
+        if (myQuorumAddr == null) {
+            throw new RuntimeException("My id " + myid + " not in the peer list");
+        }
+        
+    	qcm = new QuorumCnxManager(this);    	
+        QuorumCnxManager.Listener listener = qcm.listener;
+        
+        if(listener != null){
+            listener.start();
+            pc = new PeerCommunication(this, qcm);            
+            //qcm.toSend(new Long(1), createMsg(ServerState.LOOKING.ordinal(), 0, 0, 1));
+            /*
+            int noServers = initialNumberServers;
+            LOG.info("number of servers :" + noServers);
+            int[] currentList = new int[noServers];
+            for(int i=0;i<noServers;i++){
+            	currentList[i] = ((int)myid-1+i)%3;
+            }
+            StateObject firstStateObj = new StateObject(noServers, currentList);
+            //if(myid == 3){
+            	firstStateObj.list[1] = 2; //proposed 1 2 1
+            	byte[] proposalValue = firstStateObj.ObjToByte(firstStateObj);
+            	//pc.addProposal(proposalValue, proposerId);
+            	//qcm.toSend(new Long(1), createPeerMsg(0, 0, firstStateObj.ObjToByte(firstStateObj)));
+            	//qcm.toSend(new Long(2), createPeerMsg(0, 0, firstStateObj.ObjToByte(firstStateObj)));
+            	//qcm.toSend(new Long(3), createPeerMsg(0, 0, firstStateObj.ObjToByte(firstStateObj)));
+            	firstStateObj.list[0] = 2;
+            	firstStateObj.list[1] = 1; //proposed 2 1 1
+            	proposalValue = firstStateObj.ObjToByte(firstStateObj);
+            	addProposals(proposalValue);
+            	*/
+            //}      
+        } else {
+            LOG.error("Null listener when initializing cnx manager");
+        }
+    }
+    
+    ByteBuffer createMsg(int state, long leader, long zxid, long epoch){
+        byte requestBytes[] = new byte[28];
+        ByteBuffer requestBuffer = ByteBuffer.wrap(requestBytes);  
+        
+        /*
+         * Building notification packet to send
+         */
+                
+        requestBuffer.clear();
+        requestBuffer.putInt(state);
+        requestBuffer.putLong(leader);
+        requestBuffer.putLong(zxid);
+        requestBuffer.putLong(epoch);
+        
+        return requestBuffer;
+    }
+    
+    ByteBuffer createPeerMsg(int type, long proposalNumber, byte[] stateObjMessage){
+        byte requestBytes[] = new byte[stateObjMessage.length + 20];
+        ByteBuffer requestBuffer = ByteBuffer.wrap(requestBytes);  
+        
+        /*
+         * Building notification packet to send
+         */
+                
+        requestBuffer.clear();
+        requestBuffer.putInt(type);
+        requestBuffer.putLong(proposalNumber);
+        requestBuffer.put(stateObjMessage);  
+        return requestBuffer;
     }
 
     ResponderThread responder;
@@ -502,6 +637,7 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
     public Follower follower;
     public Leader leader;
     public Observer observer;
+    public Peer peer;
 
     protected Follower makeFollower(FileTxnSnapLog logFactory) throws IOException {
         return new Follower(this, new FollowerZooKeeperServer(logFactory, 
@@ -516,6 +652,11 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
     protected Observer makeObserver(FileTxnSnapLog logFactory) throws IOException {
         return new Observer(this, new ObserverZooKeeperServer(logFactory,
                 this, new ZooKeeperServer.BasicDataTreeBuilder(), this.zkDb));
+    }
+    
+    protected Peer makePeer(FileTxnSnapLog logFactory) throws IOException {
+    	return new Peer(this, new PeerZooKeeperServer(logFactory, this, 
+    			new ZooKeeperServer.BasicDataTreeBuilder(), this.zkDb));
     }
 
     protected Election createElectionAlgorithm(int electionAlgorithm){
@@ -556,6 +697,10 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
         return electionAlg;
     }
 
+    synchronized protected void setPeer(Peer newPeer){
+    	peer = newPeer;
+    }
+    
     synchronized protected void setLeader(Leader newLeader){
         leader=newLeader;
     }
@@ -576,6 +721,43 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
         else if (observer != null)
             return observer.zk;
         return null;
+    }
+    
+    public int processCmd(String cmd) throws InterruptedException{    	
+    	String delims = "[ ]+";
+    	String[] tokens = cmd.split(delims);
+    	if(tokens.length != 1 && tokens.length !=2){
+    		System.out.println("Invalid arguemnts "+ tokens[0] + " "+tokens[1]);    		
+    	}
+    	else if(tokens[0].equals("propose")){
+    		int propVal = Integer.parseInt(tokens[1]);
+    		int[] currLearntVal = StateObject.ByteToObj(pc.learntValue).list;
+    		if(propVal > currLearntVal[(int)myid-1]){
+    			currLearntVal[(int)myid -1 ] = propVal;
+    		}
+    		StateObject newObj = new StateObject(initialNumberServers, currLearntVal);
+    		addProposals(StateObject.ObjToByte(newObj));
+    		return 1;
+    	}
+    	else if(tokens[0].equals("read")){
+    		System.out.println("Current value is: " + StateObject.printByteValue(pc.learntValue)+"\n");
+    		return 1;
+    	}
+    	else if(tokens[0].equals("readlatest")){
+    		int[] currLearntVal = StateObject.ByteToObj(pc.learntValue).list;    		
+    		currLearntVal[(int)myid -1 ] = 0; // no-op operation issued to get latest value    		
+    		StateObject newObj = new StateObject(initialNumberServers, currLearntVal);
+    		addProposals(StateObject.ObjToByte(newObj));
+    		Thread.sleep(1000);
+    		System.out.println("Current value is: " + StateObject.printByteValue(pc.learntValue)+"\n");
+    		return 1;
+    		
+    	}
+    	else if (tokens[0].equals("quit")){
+    		return 0;
+    	}
+    	System.out.println("Re Try with valid command");
+    	return 1;
     }
 
     @Override
@@ -618,8 +800,12 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
                 switch (getPeerState()) {
                 case LOOKING:
                     try {
-                        LOG.info("LOOKING");
-                        setCurrentVote(makeLEStrategy().lookForLeader());
+                        //LOG.info("LOOKING");
+                        if(isLeaderNeeded){
+                        	setCurrentVote(makeLEStrategy().lookForLeader());
+                        }else{
+                        	LOG.info("no leader election required");
+                        }
                     } catch (Exception e) {
                         LOG.warn("Unexpected exception",e);
                         setPeerState(ServerState.LOOKING);
@@ -666,7 +852,42 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
                         }
                         setPeerState(ServerState.LOOKING);
                     }
-                    break;
+                    break;                
+                case PEER:                
+                	try{
+                		if(logFactory!= null){
+                			setPeer(makePeer(logFactory));
+                			//LOG.info("Peer is set");
+                			//setLeader(makeLeader(logFactory));
+                            //leader.lead();
+                            //setLeader(null);
+                			BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
+                    	    String inputCommand = bufferRead.readLine();
+                			while(processCmd(inputCommand)==1){      
+                				//LOG.info("Received input as proposal");
+                				bufferRead = new BufferedReader(new InputStreamReader(System.in));
+                        	    inputCommand = bufferRead.readLine();	                				                			
+                			}
+                			Thread.sleep(1000);
+                		}
+                		else {
+                			LOG.error("logFactory is not set");
+                			System.exit(3);
+                		}
+                	} catch(Exception e){
+                		LOG.warn("unexpected exception",e);
+                	}finally{
+                		//peer.shutdown("Shutdown");
+                        setPeer(null);
+                        setPeerState(ServerState.PEER);
+                        LOG.info("Closing peer");
+                        /*if (leader != null) {
+                            leader.shutdown("Forcing shutdown");
+                            setLeader(null);
+                        }*/
+                        //setPeerState(ServerState.PEER);                        
+                	}
+                	break;
                 }
             }
         } finally {
@@ -688,6 +909,9 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
         }
         if (follower != null) {
             follower.shutdown();
+        }
+        if(peer!=null){
+        	peer.shutdown("shutdown by quorumpeer");
         }
         cnxnFactory.shutdown();
         if(udpSocket != null) {
@@ -786,6 +1010,8 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
             return QuorumStats.Provider.FOLLOWING_STATE;
         case OBSERVING:
             return QuorumStats.Provider.OBSERVING_STATE;
+        case PEER:
+        	return QuorumStats.Provider.PEER_STATE;
         }
         return QuorumStats.Provider.UNKNOWN_STATE;
     }
@@ -898,7 +1124,11 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
     public void setSyncLimit(int syncLimit) {
         this.syncLimit = syncLimit;
     }
-
+    
+    public void setIsLeaderNeeded(boolean need){
+    	this.isLeaderNeeded = need;
+    }
+    
     /**
      * Gets the election type
      */
@@ -934,6 +1164,7 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
  
     public void setTxnFactory(FileTxnSnapLog factory) {
         this.logFactory = factory;
+        LOG.info("setting up transaction log factory");
     }
     
     public FileTxnSnapLog getTxnFactory() {
@@ -961,5 +1192,94 @@ public class QuorumPeer extends Thread implements QuorumStats.Provider {
      */
     public QuorumCnxManager getQuorumCnxManager() {
         return qcm;
-}
+    }
+    
+    static private class MyCommandOptions {
+
+        private Map<String,String> options = new HashMap<String,String>();
+        private List<String> cmdArgs = null;
+        private String command = null;
+
+        public MyCommandOptions() {
+          //options.put("server", "localhost:2181");
+          //options.put("timeout", "30000");
+        }
+
+        public String getOption(String opt) {
+            return options.get(opt);
+        }
+
+        public String getCommand( ) {
+            return command;
+        }
+
+        public String getCmdArgument( int index ) {
+            return cmdArgs.get(index);
+        }
+
+        public int getNumArguments( ) {
+            return cmdArgs.size();
+        }
+
+        public String[] getArgArray() {
+            return cmdArgs.toArray(new String[0]);
+        }
+
+        /**
+         * Parses a command line that may contain one or more flags
+         * before an optional command string
+         * @param args command line arguments
+         * @return true if parsing succeeded, false otherwise.
+         */
+        public boolean parseOptions(String[] args) {
+            List<String> argList = Arrays.asList(args);
+            Iterator<String> it = argList.iterator();
+
+            while (it.hasNext()) {
+                String opt = it.next();
+                try {
+                    if (opt.equals("-server")) {
+                        options.put("server", it.next());
+                    } else if (opt.equals("-timeout")) {
+                        options.put("timeout", it.next());
+                    }
+                } catch (NoSuchElementException e){
+                    System.err.println("Error: no argument found for option "
+                            + opt);
+                    return false;
+                }
+
+                if (!opt.startsWith("-")) {
+                    command = opt;
+                    cmdArgs = new ArrayList<String>( );
+                    cmdArgs.add( command );
+                    while (it.hasNext()) {
+                        cmdArgs.add(it.next());
+                    }
+                    return true;
+                }
+            }
+            return true;
+        }
+
+        /**
+         * Breaks a string into command + arguments.
+         * @param cmdstring string of form "cmd arg1 arg2..etc"
+         * @return true if parsing succeeded.
+         */
+        public boolean parseCommand( String cmdstring ) {
+            String[] args = cmdstring.split(" ");
+            if (args.length == 0){
+                return false;
+            }
+            command = args[0];
+            cmdArgs = Arrays.asList(args);
+            return true;
+        }
+    }
+
+
+    
+    
+    
 }

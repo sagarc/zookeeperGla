@@ -52,9 +52,13 @@ public class QuorumPeerConfig {
     /** defaults to -1 if not set explicitly */
     protected int maxSessionTimeout = -1;
 
+    //new member added to distinguish between leader needed or not (distributed protocol may work out) 
+    protected boolean isLeaderNeeded = true;
+    
     protected int initLimit;
     protected int syncLimit;
     protected int electionAlg = 3;
+    
     protected int electionPort = 2182;
     protected final HashMap<Long,QuorumServer> servers =
         new HashMap<Long, QuorumServer>();
@@ -65,9 +69,11 @@ public class QuorumPeerConfig {
     protected HashMap<Long, Long> serverWeight = new HashMap<Long, Long>();
     protected HashMap<Long, Long> serverGroup = new HashMap<Long, Long>();
     protected int numGroups = 0;
-    protected QuorumVerifier quorumVerifier;
+    protected QuorumVerifier quorumVerifier;    
 
     protected LearnerType peerType = LearnerType.PARTICIPANT;
+    
+    public int initialNumberServers = 0;
 
     @SuppressWarnings("serial")
     public static class ConfigException extends Exception {
@@ -144,7 +150,10 @@ public class QuorumPeerConfig {
                 initLimit = Integer.parseInt(value);
             } else if (key.equals("syncLimit")) {
                 syncLimit = Integer.parseInt(value);
-            } else if (key.equals("electionAlg")) {
+            }else if(key.equals("isLeaderNeeded")){
+            	//isLeaderNeeded = Boolean.parseBoolean(value);
+            	isLeaderNeeded = "true".equals(value);
+            }else if (key.equals("electionAlg")) {
                 electionAlg = Integer.parseInt(value);
             } else if (key.equals("peerType")) {
                 if (value.toLowerCase().equals("observer")) {
@@ -156,6 +165,7 @@ public class QuorumPeerConfig {
                     throw new ConfigException("Unrecognised peertype: " + value);
                 }
             } else if (key.startsWith("server.")) {
+            	initialNumberServers += 1;
                 int dot = key.indexOf('.');
                 long sid = Long.parseLong(key.substring(dot + 1));
                 String parts[] = value.split(":");
@@ -346,6 +356,9 @@ public class QuorumPeerConfig {
 
     public int getInitLimit() { return initLimit; }
     public int getSyncLimit() { return syncLimit; }
+    
+    public boolean getIsLeaderNeeded() {return isLeaderNeeded;}
+    public int getInitialNumberServers() {return initialNumberServers;}
     public int getElectionAlg() { return electionAlg; }
     public int getElectionPort() { return electionPort; }    
     

@@ -71,7 +71,7 @@ public class GenerateLoadImplicitJoin {
 				 if(decide > updatePercent){				 
 			    	 
 			    	 byte[] value = stateVecImJ.ReadValue(stateVecImJ.root);
-			    	/* if(value!=null)
+			    	 if(value!=null)
 						try {
 							//synchronized(lockObject){
 								out.write(stateVecImJ.PrintValue(value)+"\n");
@@ -80,7 +80,7 @@ public class GenerateLoadImplicitJoin {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-						*/
+						
 				 }
 				 else{					 
 					 int updateValue  = j;					 

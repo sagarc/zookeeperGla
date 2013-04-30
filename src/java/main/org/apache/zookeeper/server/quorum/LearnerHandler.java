@@ -85,8 +85,7 @@ public class LearnerHandler extends Thread {
     private BufferedOutputStream bufferedOutput;
 
     LearnerHandler(Socket sock, Leader leader) throws IOException {
-        super("LearnerHandler-" + sock.getRemoteSocketAddress());
-        System.out.println("89:Learnerhandler");
+        super("LearnerHandler-" + sock.getRemoteSocketAddress());        
         this.sock = sock;
         this.leader = leader;
         leader.addLearnerHandler(this);

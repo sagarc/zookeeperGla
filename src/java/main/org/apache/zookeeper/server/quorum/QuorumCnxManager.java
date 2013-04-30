@@ -304,6 +304,7 @@ public class QuorumCnxManager {
         /*
          * If sending message to myself, then simply enqueue it (loopback).
          */
+    	//LOG.info("Sending Message to server "+ sid);
         if (self.getId() == sid) {
             try {
                 b.position(0);
@@ -352,11 +353,16 @@ public class QuorumCnxManager {
      */
     
     synchronized void connectOne(long sid){
+    	//LOG.info("connect " + self.getId() + " to "+sid);
+    	//System.out.println("connect " + self.getId() + " to "+sid);
         if (senderWorkerMap.get(sid) == null){
             InetSocketAddress electionAddr;
-            if(self.quorumPeers.containsKey(sid))
+            if(self.quorumPeers.containsKey(sid)){
                 electionAddr =
                     self.quorumPeers.get(sid).electionAddr;
+            		LOG.info(" electionaddr " + electionAddr.toString());
+                	//System.out.println(" electionaddr " + electionAddr.toString());
+            }
             else{
                 LOG.warn("Invalid server id: " + sid);
                 return;
@@ -371,6 +377,7 @@ public class QuorumCnxManager {
                 channel.socket().connect(self.getView().get(sid).electionAddr, cnxTO);                
                 channel.socket().setTcpNoDelay(true);
                 initiateConnection(channel, sid);
+              //  LOG.info("connect success " + self.getId() + " to "+sid + " on "+electionAddr);
             } catch (UnresolvedAddressException e) {
                 // Sun doesn't include the address that causes this
                 // exception to be thrown, also UAE cannot be wrapped cleanly
@@ -717,6 +724,7 @@ public class QuorumCnxManager {
                         numbytes += temp_numbytes;
                     }
                     message.position(0);
+                    //System.out.println("720: Received message"+message.toString());
                     synchronized (recvQueue) {
                         recvQueue
                         .put(new Message(message.duplicate(), sid));

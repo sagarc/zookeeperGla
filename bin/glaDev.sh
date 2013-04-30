@@ -6,11 +6,11 @@ sudo rm -r "server2/version-2"
 sudo rm -r "server3/version-2"
 cd "../"
 
-rm -r "build"
+sudo rm -r "build"
 ant
 ant eclipse
 
-cd "./src/recipes"
-ant
-cd "../../bin"
-
+#cd "./src/recipes"
+#ant
+#cd "../../bin"
+cd "bin"

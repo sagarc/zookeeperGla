@@ -67,7 +67,7 @@ public class GenerateLoad {
 				 int decide  = rand.nextInt(100);
 				 if(decide > updatePercent){					 
 			    	 byte[] value = stateVec.ReadValue(stateVec.root);
-			    	 /*if(value!=null)
+			    	 if(value!=null)
 						try {
 							//synchronized(lockObject){
 								out.write(stateVec.PrintValue(value)+"\n");
@@ -75,7 +75,7 @@ public class GenerateLoad {
 						} catch (IOException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
-						}*/
+						}
 				 }
 				 else{
 					 //int updateValue = rand1.nextInt(10*totalOperations);
